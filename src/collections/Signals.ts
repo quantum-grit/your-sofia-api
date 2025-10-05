@@ -7,6 +7,61 @@ export const Signals: CollectionConfig = {
     defaultColumns: ['title', 'category', 'status', 'createdAt'],
     group: 'City Infrastructure',
   },
+  hooks: {
+    afterChange: [
+      async ({ doc, req, operation }) => {
+        // Only run on create operation
+        if (operation !== 'create') return doc
+
+        // Check if this is a waste container signal with "full" state
+        if (
+          doc.category === 'waste-container' &&
+          Array.isArray(doc.containerState) &&
+          doc.containerState.includes('full') &&
+          doc.cityObject?.type === 'waste-container' &&
+          doc.cityObject?.referenceId
+        ) {
+          try {
+            // Find the container by publicNumber
+            const containers = await req.payload.find({
+              collection: 'waste-containers',
+              where: {
+                publicNumber: {
+                  equals: doc.cityObject.referenceId,
+                },
+              },
+              limit: 1,
+            })
+
+            if (containers.docs.length > 0 && containers.docs[0]) {
+              const container = containers.docs[0]
+              
+              // Update container status to "full" if it's not already
+              if (container.status !== 'full') {
+                await req.payload.update({
+                  collection: 'waste-containers',
+                  id: container.id,
+                  data: {
+                    status: 'full',
+                  },
+                })
+
+                req.payload.logger.info(
+                  `Container ${doc.cityObject.referenceId} status automatically updated to "full" due to signal ${doc.id}`
+                )
+              }
+            }
+          } catch (error) {
+            req.payload.logger.error(
+              `Failed to update container status for signal ${doc.id}: ${error}`
+            )
+          }
+        }
+
+        return doc
+      },
+    ],
+  },
   access: {
     // Anyone can read and create signals (citizens can report)
     read: () => true,
@@ -130,6 +185,7 @@ export const Signals: CollectionConfig = {
       name: 'containerState',
       label: 'Container State',
       type: 'select',
+      hasMany: true,
       admin: {
         description: 'State of the waste container (only for waste container signals)',
         condition: (data, siblingData) => {

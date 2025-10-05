@@ -289,27 +289,11 @@ export const Signals: CollectionConfig = {
       },
     },
     {
-      name: 'reporterName',
-      label: 'Reporter Name',
+      name: 'reporterUniqueId',
+      label: 'Reporter Unique ID',
       type: 'text',
       admin: {
-        description: 'Name of the person reporting (optional)',
-      },
-    },
-    {
-      name: 'reporterEmail',
-      label: 'Reporter Email',
-      type: 'email',
-      admin: {
-        description: 'Email of the person reporting (optional)',
-      },
-    },
-    {
-      name: 'reporterPhone',
-      label: 'Reporter Phone',
-      type: 'text',
-      admin: {
-        description: 'Phone number of the person reporting (optional)',
+        description: 'Unique anonymous identifier of the reporter (for follow-up)',
       },
     },
   ],

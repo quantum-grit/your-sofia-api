@@ -923,17 +923,9 @@ export interface Signal {
    */
   adminNotes?: string | null;
   /**
-   * Name of the person reporting (optional)
+   * Unique anonymous identifier of the reporter (for follow-up)
    */
-  reporterName?: string | null;
-  /**
-   * Email of the person reporting (optional)
-   */
-  reporterEmail?: string | null;
-  /**
-   * Phone number of the person reporting (optional)
-   */
-  reporterPhone?: string | null;
+  reporterUniqueId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1586,9 +1578,7 @@ export interface SignalsSelect<T extends boolean = true> {
   images?: T;
   status?: T;
   adminNotes?: T;
-  reporterName?: T;
-  reporterEmail?: T;
-  reporterPhone?: T;
+  reporterUniqueId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

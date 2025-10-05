@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { APIError } from 'payload'
 
 export const Signals: CollectionConfig = {
   slug: 'signals',
@@ -8,6 +9,76 @@ export const Signals: CollectionConfig = {
     group: 'City Infrastructure',
   },
   hooks: {
+    beforeValidate: [
+      async ({ data, req, operation }) => {
+        // Only run on create operation
+        if (operation !== 'create' || !data) return data
+
+        // Check for duplicate waste container signals
+        if (
+          data.category === 'waste-container' &&
+          data.reporterUniqueId &&
+          data.cityObject?.referenceId
+        ) {
+          try {
+            // Find existing active signals from same reporter for same container
+            const existingSignals = await req.payload.find({
+              collection: 'signals',
+              where: {
+                and: [
+                  {
+                    reporterUniqueId: {
+                      equals: data.reporterUniqueId,
+                    },
+                  },
+                  {
+                    'cityObject.referenceId': {
+                      equals: data.cityObject.referenceId,
+                    },
+                  },
+                  {
+                    category: {
+                      equals: 'waste-container',
+                    },
+                  },
+                  {
+                    status: {
+                      not_in: ['resolved', 'rejected'],
+                    },
+                  },
+                ],
+              },
+              limit: 1,
+            })
+
+            if (existingSignals.docs.length > 0) {
+              const existingSignal = existingSignals.docs[0]
+              if (existingSignal) {
+                req.payload.logger.warn(
+                  `Duplicate signal attempt: Reporter ${data.reporterUniqueId} already has active signal #${existingSignal.id} for container ${data.cityObject.referenceId}`
+                )
+                
+                throw new APIError(
+                  `Signal for same object already exists. Signal ID: ${existingSignal.id}`,
+                  403
+                )
+              }
+            }
+          } catch (error) {
+            // If it's our custom APIError, re-throw it
+            if (error instanceof APIError) {
+              throw error
+            }
+            // For other errors, log and continue (fail-open)
+            req.payload.logger.error(
+              `Error checking for duplicate signals: ${error}`
+            )
+          }
+        }
+
+        return data
+      },
+    ],
     afterChange: [
       async ({ doc, req, operation }) => {
         // Only run on create operation

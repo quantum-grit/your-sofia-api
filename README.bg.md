@@ -7,7 +7,7 @@
 
 Бекенд API за мобилното приложение **Твоята София**. Изградено с Payload CMS 3.0, това двуезично (български/английски) система за управление на съдържание захранва градските услуги, новини и функционалности за гражданско участие за жителите на София.
 
-[🇬🇧 Read in English](README.md) | [🤝 Допринасяне](CONTRIBUTING.bg.md) | [📋 Проблеми](https://github.com/yourusername/your-sofia/issues)
+[🇬🇧 Read in English](README.md) | [🤝 Допринасяне](CONTRIBUTING.bg.md) | [📋 Проблеми](https://github.com/sofia-municipality/your-sofia-api/issues)
 
 ---
 
@@ -80,7 +80,7 @@
 
 1. Прочетете нашето [Ръководство за допринасяне](CONTRIBUTING.bg.md)
 2. Проверете [Кодекса на поведение](CONTRIBUTING.bg.md#кодекс-на-поведение)
-3. Разгледайте [отворени проблеми](https://github.com/yourusername/your-sofia/issues)
+3. Разгледайте [отворени проблеми](https://github.com/sofia-municipality/your-sofia-api/issues)
 4. Изпратете вашия принос чрез Pull Request
 
 ### Кратки насоки за допринасяне
@@ -129,8 +129,8 @@
 
 ## 📞 Контакт и поддръжка
 
-- **Проблеми**: [GitHub Issues](https://github.com/yourusername/your-sofia/issues)
-- **Дискусии**: [GitHub Discussions](https://github.com/yourusername/your-sofia/discussions)
+- **Проблеми**: [GitHub Issues](https://github.com/sofia-municipality/your-sofia-api/issues)
+- **Дискусии**: [GitHub Discussions](https://github.com/sofia-municipality/your-sofia-api/discussions)
 - **Email**: support@your-sofia.bg (ако е приложимо)
 
 ---

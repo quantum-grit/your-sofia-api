@@ -1,5 +1,9 @@
 # Your Sofia API - AI Agent Instructions
 
+## Important Instructions
+
+**Do not generate summaries of completed work.** The user can see changes in the diff/file changes. Only provide summaries if explicitly requested.
+
 ## Project Overview
 A bilingual (Bulgarian/English) backend API built with Payload CMS 3.0, providing content management and services for the Your Sofia mobile application. Powers city services, news, civic engagement features, and push notifications for Sofia residents.
 

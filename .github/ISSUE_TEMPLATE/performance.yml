@@ -1,0 +1,178 @@
+name: ⚡ Performance Issue
+description: Report slow performance, memory leaks, or optimization opportunities
+title: "[Performance]: "
+labels: ["performance", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a performance issue! Your feedback helps make Your Sofia faster and more efficient for everyone.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Where is the performance issue occurring?
+      options:
+        - Mobile App - Overall
+        - Mobile App - News Feed
+        - Mobile App - Map View
+        - Mobile App - Signal Creation
+        - Mobile App - Navigation/Routing
+        - Backend API - Overall
+        - Backend API - Specific Endpoint
+        - Database Queries
+        - Not Sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: performance-type
+    attributes:
+      label: Performance Issue Type
+      description: What kind of performance problem is this?
+      options:
+        - Slow Loading/Rendering
+        - High Memory Usage
+        - Memory Leak
+        - Battery Drain
+        - Network Inefficiency
+        - App Freeze/Hang
+        - Slow Database Queries
+        - Large Bundle Size
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Performance Issue Description
+      description: Describe the performance problem in detail
+      placeholder: |
+        The news feed takes 5-7 seconds to load when opening the app, even on a fast WiFi connection. Users expect instant loading for a good experience.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this performance issue?
+      placeholder: |
+        1. Open the Your Sofia app
+        2. Navigate to Home tab (news feed)
+        3. Notice the long loading time (5-7 seconds)
+        4. Check network tab - multiple sequential API calls
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Performance
+      description: What performance would you expect?
+      placeholder: |
+        News feed should load in under 2 seconds on normal connection. Ideally use:
+        - Cached data for instant display
+        - Background refresh for updates
+        - Single optimized API call instead of multiple calls
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Performance
+      description: What is actually happening? Include measurements if possible.
+      placeholder: |
+        - Initial load: 5-7 seconds
+        - Makes 3 separate API calls (news, media, location data)
+        - No caching - same delay on every app open
+        - Total data transferred: 2.3 MB
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: On which platform does this occur?
+      options:
+        - iOS
+        - Android
+        - Both iOS and Android
+        - Backend/Server
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device Information
+      description: Device model and specifications
+      placeholder: "iPhone 13 Pro (6GB RAM)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: measurements
+    attributes:
+      label: Performance Measurements
+      description: Provide specific measurements (load times, memory usage, etc.)
+      placeholder: |
+        - Load time: 5.2 seconds (average of 5 tests)
+        - Memory usage: 180 MB → 320 MB after loading
+        - Network: 3 API calls, 2.3 MB transferred
+        - React Native Performance Monitor: 45 FPS during load
+    validations:
+      required: false
+
+  - type: textarea
+    id: profiling
+    attributes:
+      label: Profiling Data
+      description: Screenshots from performance profiler, Chrome DevTools, React Native Performance Monitor, etc.
+      placeholder: Drag and drop profiling screenshots or data here
+    validations:
+      required: false
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Optimization
+      description: Do you have ideas for how to improve this?
+      placeholder: |
+        Possible optimizations:
+        - Implement React Query for data caching and background refetch
+        - Combine API calls into single endpoint
+        - Add pagination/infinite scroll instead of loading all news at once
+        - Use AsyncStorage to cache last news data
+        - Optimize images (use thumbnails, lazy loading)
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information
+      placeholder: |
+        - Issue is more noticeable on slower devices
+        - Similar performance on 4G vs WiFi
+        - Other tabs (Services, Profile) load much faster
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: willing-to-fix
+    attributes:
+      label: Are you willing to submit a PR to fix this?
+      description: Performance improvements are valuable contributions!
+      options:
+        - label: Yes, I'd like to work on optimizing this

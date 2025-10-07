@@ -1,0 +1,160 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior in Your Sofia
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below to help us diagnose and fix the issue.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: I am using the latest version of the app
+          required: true
+        - label: I have checked the documentation
+          required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Which component is affected?
+      description: Select the part of the application where the bug occurs
+      options:
+        - Mobile App (Frontend)
+        - Backend API (Payload CMS)
+        - Both
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Example - News feed doesn't refresh when switching language from Bulgarian to English
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to recreate the bug
+      placeholder: |
+        1. Open the app in Bulgarian
+        2. Navigate to Home tab (news feed)
+        3. Switch language to English using toggle
+        4. Notice news articles remain in Bulgarian
+      value: |
+        1. 
+        2. 
+        3. 
+        4. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+      placeholder: News articles should reload and display in English
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happens?
+      placeholder: News articles stay in Bulgarian until app is restarted
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: On which platform does this occur?
+      options:
+        - iOS
+        - Android
+        - Both iOS and Android
+        - Web (backend admin panel)
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device Information
+      description: Device model (e.g., iPhone 14 Pro, Samsung Galaxy S21)
+      placeholder: iPhone 14 Pro
+    validations:
+      required: false
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version
+      description: Operating system version (e.g., iOS 17.1, Android 14)
+      placeholder: iOS 17.1
+    validations:
+      required: false
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App Version
+      description: Version number from app settings/profile
+      placeholder: "1.0.0"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Messages or Logs
+      description: Any error messages, stack traces, or console logs
+      placeholder: Paste error messages here
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or Videos
+      description: Attach screenshots or screen recordings that show the bug
+      placeholder: Drag and drop images or videos here
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information about the problem
+      placeholder: |
+        - This only happens on the news feed, other screens update correctly
+        - The issue started after updating to version X
+        - Works fine on Android but fails on iOS
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: willing-to-fix
+    attributes:
+      label: Are you willing to submit a PR to fix this?
+      description: We welcome contributions from the community!
+      options:
+        - label: Yes, I'd like to work on fixing this bug

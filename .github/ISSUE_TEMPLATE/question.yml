@@ -1,0 +1,89 @@
+name: ❓ Question
+description: Ask a question about using or contributing to Your Sofia
+title: "[Question]: "
+labels: ["question", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question? We're here to help! 
+        
+        **Note:** For general discussions, feature ideas, or broader topics, consider using [GitHub Discussions](https://github.com/yourusername/your-sofia/discussions) instead.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm before asking
+      options:
+        - label: I have read the documentation (README.md and CONTRIBUTING.md)
+          required: true
+        - label: I have searched existing issues and discussions
+          required: true
+
+  - type: dropdown
+    id: question-area
+    attributes:
+      label: Question Category
+      description: What is your question about?
+      options:
+        - Setup & Installation
+        - Using the Mobile App
+        - Backend/API Usage
+        - Contributing Code
+        - Translation/Localization
+        - Testing
+        - Deployment
+        - Architecture/Design Decisions
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: |
+        How do I configure the PostgreSQL database for development?
+        
+        I followed the README instructions but I'm getting connection errors. Is there a specific configuration I need?
+    validations:
+      required: true
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What Have You Tried?
+      description: What steps have you already taken to find the answer?
+      placeholder: |
+        - Read the README.md setup section
+        - Checked docker-compose.postgres.yml
+        - Tried running with default PostgreSQL credentials
+        - Searched issues for "PostgreSQL" and "database"
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Environment details, relevant configuration, or other helpful information
+      placeholder: |
+        - OS: macOS Sonoma 14.1
+        - Docker version: 24.0.6
+        - Node version: 20.9.0
+        - pnpm version: 8.10.0
+    validations:
+      required: false
+
+  - type: textarea
+    id: errors
+    attributes:
+      label: Error Messages (if applicable)
+      description: Any error messages you're encountering
+      placeholder: Paste error messages here
+      render: shell
+    validations:
+      required: false

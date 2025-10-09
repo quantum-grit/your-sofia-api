@@ -41,8 +41,8 @@ openssl rand -base64 32
 
 Place your SSL certificates in:
 ```
-nginx/ssl/cert.pem
-nginx/ssl/key.pem
+docker/nginx/ssl/cert.pem
+docker/nginx/ssl/key.pem
 ```
 
 Or use Let's Encrypt:
@@ -55,13 +55,13 @@ sudo apt-get install certbot
 sudo certbot certonly --standalone -d api.your-sofia.bg
 
 # Copy certificates
-sudo cp /etc/letsencrypt/live/api.your-sofia.bg/fullchain.pem nginx/ssl/cert.pem
-sudo cp /etc/letsencrypt/live/api.your-sofia.bg/privkey.pem nginx/ssl/key.pem
+sudo cp /etc/letsencrypt/live/api.your-sofia.bg/fullchain.pem docker/nginx/ssl/cert.pem
+sudo cp /etc/letsencrypt/live/api.your-sofia.bg/privkey.pem docker/nginx/ssl/key.pem
 ```
 
 ### 4. Update Nginx Configuration
 
-Edit `nginx/nginx.conf` and replace `api.your-sofia.bg` with your domain.
+Edit `docker/nginx/nginx.conf` and replace `api.your-sofia.bg` with your domain.
 
 ### 5. Deploy with Docker Compose
 
@@ -69,17 +69,17 @@ Edit `nginx/nginx.conf` and replace `api.your-sofia.bg` with your domain.
 
 ```bash
 # Start postgres only
-docker-compose -f docker-compose.prod.yml --env-file .env.production up -d postgres
+docker-compose -f docker/docker-compose.prod.yml --env-file .env.production up -d postgres
 
 # Wait for postgres to be healthy (check with: docker ps)
 # Then build and start the payload service
-docker-compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+docker-compose -f docker/docker-compose.prod.yml --env-file .env.production up -d --build
 ```
 
 **With Nginx:**
 ```bash
 # After postgres and payload are running
-docker-compose -f docker-compose.prod.yml --env-file .env.production --profile with-nginx up -d
+docker-compose -f docker/docker-compose.prod.yml --env-file .env.production --profile with-nginx up -d
 ```
 
 ### 6. Verify Deployment
@@ -89,7 +89,7 @@ docker-compose -f docker-compose.prod.yml --env-file .env.production --profile w
 docker ps
 
 # Check logs
-docker-compose -f docker-compose.prod.yml logs -f payload
+docker-compose -f docker/docker-compose.prod.yml logs -f payload
 
 # Test API
 curl https://api.your-sofia.bg/api/health
@@ -104,8 +104,8 @@ Navigate to `https://api.your-sofia.bg/admin` and create your first admin user.
 ### Backup Database
 
 ```bash
-chmod +x scripts/backup-db.sh
-./scripts/backup-db.sh
+chmod +x docker/scripts/backup-db.sh
+./docker/scripts/backup-db.sh
 ```
 
 Backups are stored in `./backups/` directory.
@@ -113,8 +113,8 @@ Backups are stored in `./backups/` directory.
 ### Restore Database
 
 ```bash
-chmod +x scripts/restore-db.sh
-./scripts/restore-db.sh ./backups/your-sofia_20250107_120000.sql.gz
+chmod +x docker/scripts/restore-db.sh
+./docker/scripts/restore-db.sh ./backups/your-sofia_20250107_120000.sql.gz
 ```
 
 ### Set Up Automated Backups
@@ -124,7 +124,7 @@ Add to crontab:
 crontab -e
 
 # Daily backup at 2 AM
-0 2 * * * cd /path/to/your-sofia-api && ./scripts/backup-db.sh >> /var/log/your-sofia-backup.log 2>&1
+0 2 * * * cd /path/to/your-sofia-api && ./docker/scripts/backup-db.sh >> /var/log/your-sofia-backup.log 2>&1
 ```
 
 ## Monitoring
@@ -133,17 +133,17 @@ crontab -e
 
 ```bash
 # All services
-docker-compose -f docker-compose.prod.yml logs -f
+docker-compose -f docker/docker-compose.prod.yml logs -f
 
 # Specific service
-docker-compose -f docker-compose.prod.yml logs -f payload
-docker-compose -f docker-compose.prod.yml logs -f postgres
+docker-compose -f docker/docker-compose.prod.yml logs -f payload
+docker-compose -f docker/docker-compose.prod.yml logs -f postgres
 ```
 
 ### Check Container Status
 
 ```bash
-docker-compose -f docker-compose.prod.yml ps
+docker-compose -f docker/docker-compose.prod.yml ps
 ```
 
 ### Resource Usage
@@ -163,21 +163,21 @@ git pull origin main
 ### Rebuild and Restart
 
 ```bash
-docker-compose -f docker-compose.prod.yml --env-file .env.production build
-docker-compose -f docker-compose.prod.yml --env-file .env.production up -d
+docker-compose -f docker/docker-compose.prod.yml --env-file .env.production build
+docker-compose -f docker/docker-compose.prod.yml --env-file .env.production up -d
 ```
 
 ### Zero-Downtime Update (with multiple instances)
 
 ```bash
 # Scale up
-docker-compose -f docker-compose.prod.yml --env-file .env.production up -d --scale payload=2
+docker-compose -f docker/docker-compose.prod.yml --env-file .env.production up -d --scale payload=2
 
 # Wait for health check
 sleep 30
 
 # Remove old container
-docker-compose -f docker-compose.prod.yml --env-file .env.production up -d --scale payload=1
+docker-compose -f docker/docker-compose.prod.yml --env-file .env.production up -d --scale payload=1
 ```
 
 ## Security Checklist
@@ -199,17 +199,17 @@ docker-compose -f docker-compose.prod.yml --env-file .env.production up -d --sca
 
 ```bash
 # Check logs
-docker-compose -f docker-compose.prod.yml logs payload
+docker-compose -f docker/docker-compose.prod.yml logs payload
 
 # Check environment variables
-docker-compose -f docker-compose.prod.yml config
+docker-compose -f docker/docker-compose.prod.yml config
 ```
 
 ### Database Connection Issues
 
 ```bash
 # Check PostgreSQL logs
-docker-compose -f docker-compose.prod.yml logs postgres
+docker-compose -f docker/docker-compose.prod.yml logs postgres
 
 # Test database connection
 docker exec -it your-sofia-postgres-prod psql -U postgres -d your-sofia
@@ -240,7 +240,7 @@ du -sh ./public/media
 
 ### PostgreSQL
 
-Edit `docker-compose.prod.yml` and add to postgres service:
+Edit `docker/docker-compose.prod.yml` and add to postgres service:
 ```yaml
 command:
   - "postgres"
@@ -254,7 +254,7 @@ command:
 
 ### Node.js
 
-Adjust memory limits in `docker-compose.prod.yml`:
+Adjust memory limits in `docker/docker-compose.prod.yml`:
 ```yaml
 payload:
   environment:

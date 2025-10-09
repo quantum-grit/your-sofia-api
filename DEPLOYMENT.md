@@ -2,6 +2,8 @@
 
 This guide explains how to deploy Your Sofia API to a production server.
 
+> 💡 **Automated Deployment Available**: Check [CI/CD Documentation](.github/CI-CD.md) for automated deployment via GitHub Actions.
+
 ## Prerequisites
 
 - Docker and Docker Compose installed on the server

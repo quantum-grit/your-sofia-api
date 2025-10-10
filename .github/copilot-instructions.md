@@ -7,7 +7,7 @@
 ## Project Overview
 A bilingual (Bulgarian/English) backend API built with Payload CMS 3.0, providing content management and services for the Your Sofia mobile application. Powers city services, news, civic engagement features, and push notifications for Sofia residents.
 
-**Sister Repository**: [your-sofia-mobile](https://github.com/yourusername/your-sofia-mobile) - React Native mobile app
+**Sister Repository**: [your-sofia-mobile](https://github.com/sofia-municipality/your-sofia-mobile) - React Native mobile app
 
 ## Architecture
 

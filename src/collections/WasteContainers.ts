@@ -17,6 +17,16 @@ export const WasteContainers: CollectionConfig = {
   },
   fields: [
     {
+      name: 'legacyId',
+      label: 'Legacy System ID',
+      type: 'text',
+      unique: true,
+      admin: {
+        description: 'Original ID from the legacy system (for migration tracking)',
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'publicNumber',
       label: 'Public Container Number',
       type: 'text',
@@ -167,6 +177,30 @@ export const WasteContainers: CollectionConfig = {
       defaultValue: 'general',
       admin: {
         description: 'Type of waste this container accepts',
+      },
+    },
+    {
+      name: 'source',
+      label: 'Data Source',
+      type: 'select',
+      required: true,
+      options: [
+        {
+          label: 'Community Reported',
+          value: 'community',
+        },
+        {
+          label: 'Official Municipality Data',
+          value: 'official',
+        },
+        {
+          label: 'Third Party Integration',
+          value: 'third_party',
+        },
+      ],
+      defaultValue: 'community',
+      admin: {
+        description: 'Source of the container data',
       },
     },
     {

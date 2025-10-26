@@ -814,6 +814,10 @@ export interface PushToken {
 export interface WasteContainer {
   id: number;
   /**
+   * Original ID from the legacy system (for migration tracking)
+   */
+  legacyId?: string | null;
+  /**
    * Unique identifier visible to citizens (e.g., SOF-001, WC-123)
    */
   publicNumber: string;
@@ -855,6 +859,10 @@ export interface WasteContainer {
    * Type of waste this container accepts
    */
   wasteType: 'general' | 'recyclables' | 'organic' | 'glass' | 'paper' | 'plastic' | 'metal';
+  /**
+   * Source of the container data
+   */
+  source: 'community' | 'official' | 'third_party';
   status: 'active' | 'full' | 'maintenance' | 'inactive';
   /**
    * Any additional information about this container
@@ -902,7 +910,7 @@ export interface Signal {
   /**
    * State of the waste container (only for waste container signals)
    */
-  containerState?: ('full' | 'dirty' | 'damaged')[] | null;
+  containerState?: ('full' | 'dirty' | 'damaged' | 'empty' | 'forCollection' | 'broken')[] | null;
   location?: {
     /**
      * Latitude coordinate
@@ -1547,6 +1555,7 @@ export interface PushTokensSelect<T extends boolean = true> {
  * via the `definition` "waste-containers_select".
  */
 export interface WasteContainersSelect<T extends boolean = true> {
+  legacyId?: T;
   publicNumber?: T;
   image?: T;
   location?:
@@ -1561,6 +1570,7 @@ export interface WasteContainersSelect<T extends boolean = true> {
   serviceInterval?: T;
   servicedBy?: T;
   wasteType?: T;
+  source?: T;
   status?: T;
   notes?: T;
   updatedAt?: T;

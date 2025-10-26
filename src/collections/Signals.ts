@@ -301,6 +301,18 @@ export const Signals: CollectionConfig = {
           label: 'Damaged',
           value: 'damaged',
         },
+        {
+          label: 'Empty',
+          value: 'empty',
+        },
+        {
+          label: 'For Collection',
+          value: 'forCollection',
+        },
+        {
+          label: 'Broken',
+          value: 'broken',
+        },
       ],
     },
     {

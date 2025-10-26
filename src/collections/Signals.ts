@@ -134,6 +134,8 @@ export const Signals: CollectionConfig = {
     ],
   },
   access: {
+    // Only admin role can access the admin panel
+    admin: ({ req: { user } }) => user?.role === 'admin',
     // Anyone can read and create signals (citizens can report)
     read: () => true,
     create: () => true,

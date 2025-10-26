@@ -1,4 +1,9 @@
 import type { CollectionConfig } from 'payload'
+import { cleanContainer } from '../endpoints/cleanContainer'
+
+const canEditContainers = ({ req: { user } }: any) => {
+  return user?.role === 'containerAdmin' || user?.role === 'admin'
+}
 
 export const WasteContainers: CollectionConfig = {
   slug: 'waste-containers',
@@ -7,13 +12,16 @@ export const WasteContainers: CollectionConfig = {
     defaultColumns: ['publicNumber', 'location', 'capacitySize', 'servicedBy'],
     group: 'City Infrastructure',
   },
+  endpoints: [cleanContainer],
   access: {
+    // Only admin role can access the admin panel
+    admin: ({ req: { user } }) => user?.role === 'admin',
     // Anyone can read waste container data
     read: () => true,
-    // Only admins can create/update/delete
-    create: ({ req: { user } }) => Boolean(user),
-    update: ({ req: { user } }) => Boolean(user),
-    delete: ({ req: { user } }) => Boolean(user),
+    // Only containerAdmin and admin can create/update/delete
+    create: canEditContainers,
+    update: canEditContainers,
+    delete: canEditContainers,
   },
   fields: [
     {

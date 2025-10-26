@@ -8,6 +8,8 @@ export const News: CollectionConfig = {
     defaultColumns: ['title', 'topic', 'publishedAt', 'status'],
   },
   access: {
+    // Only admin role can access the admin panel
+    admin: ({ req: { user } }) => user?.role === 'admin',
     // Anyone can read published news
     read: ({ req: { user } }) => {
       if (user) return true // Admins can see all

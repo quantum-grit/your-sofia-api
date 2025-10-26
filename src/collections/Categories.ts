@@ -7,6 +7,7 @@ import { slugField } from '@/fields/slug'
 export const Categories: CollectionConfig = {
   slug: 'categories',
   access: {
+    admin: ({ req: { user } }) => user?.role === 'admin',
     create: authenticated,
     delete: authenticated,
     read: anyone,

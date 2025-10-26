@@ -8,6 +8,8 @@ export const PushTokens: CollectionConfig = {
     description: 'Expo push notification tokens from mobile devices',
   },
   access: {
+    // Only admin role can access the admin panel
+    admin: ({ req: { user } }) => user?.role === 'admin',
     // Anyone can create (register device)
     create: () => true,
     // Only admins can read/update/delete

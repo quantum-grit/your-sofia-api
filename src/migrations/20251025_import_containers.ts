@@ -1,6 +1,7 @@
 import { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
 import * as fs from 'fs'
 import * as path from 'path'
+import { fileURLToPath } from 'url'
 
 interface LegacyContainer {
   id: string
@@ -17,8 +18,10 @@ interface LegacyContainer {
 export async function up({ payload }: MigrateUpArgs): Promise<void> {
   console.log('Starting waste containers import migration...')
 
-  // Read the backup JSON file
-  const backupPath = path.join(process.cwd(), 'backups', 'containers.json')
+  // Use __dirname for ESM compatibility
+  const __filename = fileURLToPath(import.meta.url)
+  const __dirname = path.dirname(__filename)
+  const backupPath = path.join(__dirname, 'imports', 'containers.json')
   const containersData = JSON.parse(fs.readFileSync(backupPath, 'utf-8')) as LegacyContainer[]
 
   console.log(`Found ${containersData.length} containers to import`)

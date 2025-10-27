@@ -1,6 +1,7 @@
 import { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
 import * as fs from 'fs'
 import * as path from 'path'
+import { fileURLToPath } from 'url'
 
 interface LegacyVote {
   vote_type: 'full' | 'empty' | 'broken' | 'dirty' | 'ready_for_collection'
@@ -11,8 +12,10 @@ interface LegacyVote {
 export async function up({ payload }: MigrateUpArgs): Promise<void> {
   console.log('Starting votes import migration...')
 
-  // Read the backup JSON file
-  const backupPath = path.join(process.cwd(), 'backups', 'votes.json')
+  // Use __dirname for ESM compatibility
+  const __filename = fileURLToPath(import.meta.url)
+  const __dirname = path.dirname(__filename)
+  const backupPath = path.join(__dirname, 'imports', 'votes.json')
   const votesData = JSON.parse(fs.readFileSync(backupPath, 'utf-8')) as LegacyVote[]
 
   console.log(`Found ${votesData.length} votes to import`)

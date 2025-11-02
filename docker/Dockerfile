@@ -29,9 +29,7 @@ COPY . .
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
-
-ENV DATABASE_URI=postgres://postgres:postgres@127.0.0.1:5432/api
-ENV NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+ENV NEXT_PUBLIC_SERVER_URL=https://your.sofia.bg
 
 # Skip payload operations during build
 ENV PAYLOAD_DROP_DATABASE=false
@@ -50,15 +48,17 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+COPY --from=builder /app/public ./public
+
 # Create necessary directories
-RUN mkdir -p public/media .next
-RUN chown -R nextjs:nodejs public .next
+RUN mkdir .next
+RUN chown -R nextjs:nodejs .next
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+# Copy public folder (Next.js standalone doesn't include it)
 
 USER nextjs
 

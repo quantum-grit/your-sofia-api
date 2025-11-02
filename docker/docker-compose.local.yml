@@ -13,7 +13,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: your-sofia-dev
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
     healthcheck:
@@ -21,6 +21,26 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - your-sofia-dev-network
+
+  payload:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: your-sofia-api-dev
+    restart: unless-stopped
+    environment:
+      DATABASE_URI: postgres://postgres:postgres@postgres:5432/your-sofia-dev
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:-dev-secret-change-me}
+      NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-http://localhost:3003}
+      NODE_ENV: development
+      PORT: 3000
+    ports:
+      - "3003:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - your-sofia-dev-network
 

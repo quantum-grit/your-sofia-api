@@ -40,7 +40,6 @@ services:
     ports:
       - "${API_PORT:-3000}:3000"
     volumes:
-      - ../public:/app/public
       - media_data:/app/public/media
     depends_on:
       postgres:

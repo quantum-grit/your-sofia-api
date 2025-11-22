@@ -15,6 +15,7 @@ import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { PushTokens } from './collections/PushTokens'
 import { WasteContainers } from './collections/WasteContainers'
+import { WasteContainerObservations } from './collections/WasteContainerObservations'
 import { Signals } from './collections/Signals'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
@@ -75,7 +76,7 @@ export default buildConfig({
     migrationDir: path.resolve(dirname, 'migrations'),
     prodMigrations: migrations,
   }),
-  collections: [News, Pages, Posts, Media, Categories, Users, PushTokens, WasteContainers, Signals],
+  collections: [News, Pages, Posts, Media, Categories, Users, PushTokens, WasteContainers, WasteContainerObservations, Signals],
   cors: [getServerSideURL()].filter(Boolean),
   endpoints: [healthCheck],
   globals: [Header, Footer],

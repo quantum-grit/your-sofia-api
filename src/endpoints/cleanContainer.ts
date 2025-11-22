@@ -26,6 +26,10 @@ export const cleanContainer: Endpoint = {
     }
 
     try {
+      // Parse form data (supports multipart for photo upload)
+      const formData = await req.formData()
+      const notes = formData.get('notes') as string | null
+      const photoFile = formData.get('photo') as File | null
       // Find the container
       const container = await payload.findByID({
         collection: 'waste-containers',
@@ -84,6 +88,51 @@ export const cleanContainer: Endpoint = {
         },
       })
 
+      let observationId = null
+
+      // If photo uploaded, create observation record
+      if (photoFile && photoFile.size > 0) {
+        try {
+          // Convert File to Buffer
+          const arrayBuffer = await photoFile.arrayBuffer()
+          const buffer = Buffer.from(arrayBuffer)
+
+          // Upload to media collection
+          const mediaDoc = await payload.create({
+            collection: 'media',
+            data: {
+              alt: `Container ${container.publicNumber} cleaned observation`,
+            },
+            file: {
+              data: buffer,
+              mimetype: photoFile.type || 'image/jpeg',
+              name: photoFile.name || `observation-${container.publicNumber}-${Date.now()}.jpg`,
+              size: photoFile.size,
+            },
+          })
+
+          // Create observation record
+          const observation = await payload.create({
+            collection: 'waste-container-observations',
+            data: {
+              container: parseInt(id as string),
+              photo: mediaDoc.id,
+              cleanedBy: user.id,
+              cleanedAt: new Date().toISOString(),
+              notes: notes || '',
+            },
+          })
+
+          observationId = observation.id
+          payload.logger.info(
+            `Photo observation created for container ${container.publicNumber} by ${(user as any).email}`
+          )
+        } catch (photoError) {
+          payload.logger.error(`Error uploading photo for container ${id}:`, photoError)
+          // Continue even if photo upload fails
+        }
+      }
+
       payload.logger.info(
         `Container ${container.publicNumber} cleaned by ${(user as any).email}. Resolved ${signals.docs.length} signals.`
       )
@@ -93,6 +142,7 @@ export const cleanContainer: Endpoint = {
           success: true,
           container: updatedContainer,
           resolvedSignals: signals.docs.length,
+          observationId,
         },
         { status: 200 }
       )

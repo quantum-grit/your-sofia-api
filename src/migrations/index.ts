@@ -8,6 +8,7 @@ import * as migration_20251028_212230_enabled_import_export_plugin from './20251
 import * as migration_20251028_213708_import_containers_again from './20251028_213708_import_containers_again';
 import * as migration_20251028_213810_import_signals_again from './20251028_213810_import_signals_again';
 import * as migration_20251122_091224 from './20251122_091224';
+import * as migration_20251122_140508_upload_photo_observation from './20251122_140508_upload_photo_observation';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20251122_091224.up,
     down: migration_20251122_091224.down,
-    name: '20251122_091224'
+    name: '20251122_091224',
+  },
+  {
+    up: migration_20251122_140508_upload_photo_observation.up,
+    down: migration_20251122_140508_upload_photo_observation.down,
+    name: '20251122_140508_upload_photo_observation'
   },
 ];

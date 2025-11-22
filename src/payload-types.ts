@@ -75,6 +75,7 @@ export interface Config {
     users: User;
     'push-tokens': PushToken;
     'waste-containers': WasteContainer;
+    'waste-container-observations': WasteContainerObservation;
     signals: Signal;
     redirects: Redirect;
     forms: Form;
@@ -96,6 +97,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     'push-tokens': PushTokensSelect<false> | PushTokensSelect<true>;
     'waste-containers': WasteContainersSelect<false> | WasteContainersSelect<true>;
+    'waste-container-observations': WasteContainerObservationsSelect<false> | WasteContainerObservationsSelect<true>;
     signals: SignalsSelect<false> | SignalsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -884,6 +886,20 @@ export interface WasteContainer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "waste-container-observations".
+ */
+export interface WasteContainerObservation {
+  id: number;
+  container: number | WasteContainer;
+  photo: number | Media;
+  cleanedBy: number | User;
+  cleanedAt: string;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "signals".
  */
 export interface Signal {
@@ -1196,6 +1212,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'waste-containers';
         value: number | WasteContainer;
+      } | null)
+    | ({
+        relationTo: 'waste-container-observations';
+        value: number | WasteContainerObservation;
       } | null)
     | ({
         relationTo: 'signals';
@@ -1628,6 +1648,19 @@ export interface WasteContainersSelect<T extends boolean = true> {
   status?: T;
   notes?: T;
   lastCleaned?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "waste-container-observations_select".
+ */
+export interface WasteContainerObservationsSelect<T extends boolean = true> {
+  container?: T;
+  photo?: T;
+  cleanedBy?: T;
+  cleanedAt?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

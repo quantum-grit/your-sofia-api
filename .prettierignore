@@ -13,4 +13,6 @@
 **/migrations/**
 tsconfig.json
 pnpm-lock.yaml
+.agents/**
+.claude/**
 

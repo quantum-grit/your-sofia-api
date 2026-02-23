@@ -20,6 +20,8 @@ import * as migration_20260117_101146_bins from './20260117_101146_bins';
 import * as migration_20260128_import_izgrev_containers from './20260128_import_izgrev_containers';
 import * as migration_20260128_import_slatina_containers from './20260128_import_slatina_containers';
 import * as migration_20260202_190836_assignments from './20260202_190836_assignments';
+import * as migration_20260209_174317_container_location from './20260209_174317_container_location';
+import * as migration_20260209_181419_signals_point_location from './20260209_181419_signals_point_location';
 
 export const migrations = [
   {
@@ -130,6 +132,16 @@ export const migrations = [
   {
     up: migration_20260202_190836_assignments.up,
     down: migration_20260202_190836_assignments.down,
-    name: '20260202_190836_assignments'
+    name: '20260202_190836_assignments',
+  },
+  {
+    up: migration_20260209_174317_container_location.up,
+    down: migration_20260209_174317_container_location.down,
+    name: '20260209_174317_container_location',
+  },
+  {
+    up: migration_20260209_181419_signals_point_location.up,
+    down: migration_20260209_181419_signals_point_location.down,
+    name: '20260209_181419_signals_point_location'
   },
 ];

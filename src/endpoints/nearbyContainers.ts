@@ -52,9 +52,8 @@ export const nearbyContainers: Endpoint = {
         SELECT 
           wc.id,
           wc.public_number,
-          wc.location_latitude,
-          wc.location_longitude,
-          wc.location_address,
+          ST_AsGeoJSON(wc.location)::json as location,
+          wc.address,
           wc.capacity_volume,
           wc.waste_type,
           wc.status,
@@ -68,13 +67,13 @@ export const nearbyContainers: Endpoint = {
           COALESCE(json_agg(wcs.value) FILTER (WHERE wcs.value IS NOT NULL), '[]'::json) as state,
           ST_Distance(
             ST_MakePoint(${longitude}, ${latitude})::geography,
-            ST_MakePoint(wc.location_longitude, wc.location_latitude)::geography
+            wc.location
           ) as distance
         FROM waste_containers wc
         LEFT JOIN waste_containers_state wcs ON wcs.parent_id = wc.id
         WHERE ST_DWithin(
           ST_MakePoint(${longitude}, ${latitude})::geography,
-          ST_MakePoint(wc.location_longitude, wc.location_latitude)::geography,
+          wc.location,
           ${radius}
         )
         GROUP BY wc.id
@@ -103,9 +102,9 @@ export const nearbyContainers: Endpoint = {
         id: row.id,
         publicNumber: row.public_number,
         location: {
-          latitude: parseFloat(row.location_latitude),
-          longitude: parseFloat(row.location_longitude),
-          address: row.location_address,
+          latitude: parseFloat(row.location.coordinates[1]),
+          longitude: parseFloat(row.location.coordinates[0]),
+          address: row.location.address,
         },
         capacityVolume: parseFloat(row.capacity_volume),
         capacitySize: row.capacity_size,

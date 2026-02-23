@@ -826,6 +826,8 @@ export interface PushToken {
   createdAt: string;
 }
 /**
+ * Manage waste containers across the city
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "waste-containers".
  */
@@ -843,20 +845,17 @@ export interface WasteContainer {
    * Photo of the waste container
    */
   image?: (number | null) | Media;
-  location: {
-    /**
-     * Latitude coordinate (e.g., 42.6977 for Sofia)
-     */
-    latitude: number;
-    /**
-     * Longitude coordinate (e.g., 23.3219 for Sofia)
-     */
-    longitude: number;
-    /**
-     * Human-readable address (optional)
-     */
-    address?: string | null;
-  };
+  /**
+   * Geographic coordinates [longitude, latitude] - enables geospatial queries
+   *
+   * @minItems 2
+   * @maxItems 2
+   */
+  location: [number, number];
+  /**
+   * Human-readable address (e.g., "ul. Vitosha 1, Sofia")
+   */
+  address?: string | null;
   /**
    * Container capacity in cubic meters (m³)
    */
@@ -885,6 +884,9 @@ export interface WasteContainer {
    * Source of the container data
    */
   source: 'community' | 'official' | 'third_party';
+  /**
+   * Operational status of the container
+   */
   status: 'active' | 'full' | 'maintenance' | 'inactive';
   /**
    * Current state(s) of the waste container (can have multiple states)
@@ -916,6 +918,8 @@ export interface WasteContainerObservation {
   createdAt: string;
 }
 /**
+ * Citizen-reported issues and problems
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "signals".
  */
@@ -929,6 +933,9 @@ export interface Signal {
    * Detailed description of the problem
    */
   description?: string | null;
+  /**
+   * Type of issue being reported
+   */
   category:
     | 'waste-container'
     | 'street-damage'
@@ -957,20 +964,17 @@ export interface Signal {
   containerState?:
     | ('full' | 'dirty' | 'damaged' | 'leaves' | 'maintenance' | 'bagged' | 'fallen' | 'bulkyWaste')[]
     | null;
-  location?: {
-    /**
-     * Latitude coordinate
-     */
-    latitude?: number | null;
-    /**
-     * Longitude coordinate
-     */
-    longitude?: number | null;
-    /**
-     * Human-readable address
-     */
-    address?: string | null;
-  };
+  /**
+   * Geographic coordinates [longitude, latitude] of the reported issue
+   *
+   * @minItems 2
+   * @maxItems 2
+   */
+  location?: [number, number] | null;
+  /**
+   * Human-readable address of the location
+   */
+  address?: string | null;
   /**
    * Photos of the problem
    */
@@ -1710,13 +1714,8 @@ export interface WasteContainersSelect<T extends boolean = true> {
   legacyId?: T;
   publicNumber?: T;
   image?: T;
-  location?:
-    | T
-    | {
-        latitude?: T;
-        longitude?: T;
-        address?: T;
-      };
+  location?: T;
+  address?: T;
   capacityVolume?: T;
   capacitySize?: T;
   binCount?: T;
@@ -1760,13 +1759,8 @@ export interface SignalsSelect<T extends boolean = true> {
         name?: T;
       };
   containerState?: T;
-  location?:
-    | T
-    | {
-        latitude?: T;
-        longitude?: T;
-        address?: T;
-      };
+  location?: T;
+  address?: T;
   images?: T;
   status?: T;
   adminNotes?: T;

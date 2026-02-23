@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Access } from 'payload'
 import { APIError } from 'payload'
 import { randomUUID } from 'crypto'
 
@@ -21,13 +21,48 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c // Distance in meters
 }
 
+const isAdmin = ({ req: { user } }: { req: any }): boolean => user?.role === 'admin'
+
+const canUpdate: Access = async ({ req, data, id }) => {
+  // Admins can always update
+  if (req.user) return true
+
+  // For non-admin updates, verify reporterUniqueId
+  if (data && data.reporterUniqueId && id) {
+    try {
+      // Fetch the existing signal
+      const existingSignal = await req.payload.findByID({
+        collection: 'signals',
+        id: id.toString(),
+      })
+
+      // Check if the reporterUniqueId matches
+      if (existingSignal.reporterUniqueId === data.reporterUniqueId) {
+        return true
+      }
+    } catch (error) {
+      req.payload.logger.error(`Error verifying reporterUniqueId: ${error}`)
+      return false
+    }
+  }
+
+  return false
+}
+
 export const Signals: CollectionConfig = {
   slug: 'signals',
+  labels: {
+    singular: 'Signal',
+    plural: 'Signals',
+  },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'category', 'status', 'createdAt'],
+    defaultColumns: ['title', 'category', 'status', 'createdAt', 'reporterUniqueId'],
     group: 'City Infrastructure',
+    description: 'Citizen-reported issues and problems',
+    listSearchableFields: ['title', 'reporterUniqueId'],
   },
+  defaultSort: '-createdAt',
   hooks: {
     beforeValidate: [
       async ({ data, req, operation }) => {
@@ -38,14 +73,16 @@ export const Signals: CollectionConfig = {
         if (
           data.category === 'waste-container' &&
           data.cityObject?.referenceId &&
-          data.location?.latitude &&
-          data.location?.longitude
+          data.location &&
+          Array.isArray(data.location)
         ) {
           // Check if user is admin (skip proximity check for admins)
-          const isAdmin = req.user?.role === 'admin'
+          const isAdminUser = req.user?.role === 'admin'
 
-          if (!isAdmin) {
+          if (!isAdminUser) {
             try {
+              const [signalLng, signalLat] = data.location
+
               // Find the container by publicNumber
               const containers = await req.payload.find({
                 collection: 'waste-containers',
@@ -59,12 +96,14 @@ export const Signals: CollectionConfig = {
 
               if (containers.docs.length > 0) {
                 const container = containers.docs[0]
-                if (container && container.location?.latitude && container.location?.longitude) {
+                // Point field stores coordinates as [longitude, latitude]
+                if (container && container.location && Array.isArray(container.location)) {
+                  const [containerLng, containerLat] = container.location
                   const distance = calculateDistance(
-                    data.location.latitude,
-                    data.location.longitude,
-                    container.location.latitude,
-                    container.location.longitude
+                    signalLat,
+                    signalLng,
+                    containerLat,
+                    containerLng
                   )
 
                   // Check if user is within 30 meters
@@ -97,8 +136,8 @@ export const Signals: CollectionConfig = {
           data.category === 'waste-container' &&
           data.cityObject?.type === 'waste-container' &&
           !data.cityObject?.referenceId &&
-          data.location?.latitude &&
-          data.location?.longitude
+          data.location &&
+          Array.isArray(data.location)
         ) {
           try {
             // Generate a unique public number based on UUID
@@ -114,11 +153,9 @@ export const Signals: CollectionConfig = {
                 wasteType: 'general',
                 capacitySize: 'standard',
                 capacityVolume: 3,
-                location: {
-                  latitude: data.location.latitude,
-                  longitude: data.location.longitude,
-                  address: data.location.address,
-                },
+                // Point field format: [longitude, latitude]
+                location: data.location as [number, number],
+                address: data.address,
                 notes: `Auto-created from signal. ${data.cityObject.name || 'New container'}`,
               },
               draft: false,
@@ -271,38 +308,10 @@ export const Signals: CollectionConfig = {
     ],
   },
   access: {
-    // Only admin role can access the admin panel
-    admin: ({ req: { user } }) => user?.role === 'admin',
-    // Anyone can read and create signals (citizens can report)
+    admin: isAdmin,
     read: () => true,
     create: () => true,
-    // Update: Allow if user is admin OR if reporterUniqueId matches
-    update: async ({ req, data, id }) => {
-      // Admins can always update
-      if (req.user) return true
-
-      // For non-admin updates, verify reporterUniqueId
-      if (data && data.reporterUniqueId && id) {
-        try {
-          // Fetch the existing signal
-          const existingSignal = await req.payload.findByID({
-            collection: 'signals',
-            id: id.toString(),
-          })
-
-          // Check if the reporterUniqueId matches
-          if (existingSignal.reporterUniqueId === data.reporterUniqueId) {
-            return true
-          }
-        } catch (error) {
-          req.payload.logger.error(`Error verifying reporterUniqueId: ${error}`)
-          return false
-        }
-      }
-
-      return false
-    },
-    // Only admins can delete
+    update: canUpdate,
     delete: ({ req: { user } }) => Boolean(user),
   },
   fields: [
@@ -311,7 +320,6 @@ export const Signals: CollectionConfig = {
       label: 'Title',
       type: 'text',
       required: true,
-      localized: true,
       admin: {
         description: 'Brief description of the signal',
       },
@@ -321,7 +329,6 @@ export const Signals: CollectionConfig = {
       label: 'Description',
       type: 'textarea',
       required: false,
-      localized: true,
       admin: {
         description: 'Detailed description of the problem',
       },
@@ -332,36 +339,19 @@ export const Signals: CollectionConfig = {
       type: 'select',
       required: true,
       options: [
-        {
-          label: 'Waste Container Issue',
-          value: 'waste-container',
-        },
-        {
-          label: 'Street Damage',
-          value: 'street-damage',
-        },
-        {
-          label: 'Lighting',
-          value: 'lighting',
-        },
-        {
-          label: 'Green Spaces',
-          value: 'green-spaces',
-        },
-        {
-          label: 'Parking',
-          value: 'parking',
-        },
-        {
-          label: 'Public Transport',
-          value: 'public-transport',
-        },
-        {
-          label: 'Other',
-          value: 'other',
-        },
+        { label: 'Waste Container Issue', value: 'waste-container' },
+        { label: 'Street Damage', value: 'street-damage' },
+        { label: 'Lighting', value: 'lighting' },
+        { label: 'Green Spaces', value: 'green-spaces' },
+        { label: 'Parking', value: 'parking' },
+        { label: 'Public Transport', value: 'public-transport' },
+        { label: 'Other', value: 'other' },
       ],
       defaultValue: 'other',
+      index: true,
+      admin: {
+        description: 'Type of issue being reported',
+      },
     },
     {
       name: 'cityObject',
@@ -376,26 +366,11 @@ export const Signals: CollectionConfig = {
           label: 'Object Type',
           type: 'select',
           options: [
-            {
-              label: 'Waste Container',
-              value: 'waste-container',
-            },
-            {
-              label: 'Street',
-              value: 'street',
-            },
-            {
-              label: 'Park',
-              value: 'park',
-            },
-            {
-              label: 'Building',
-              value: 'building',
-            },
-            {
-              label: 'Other',
-              value: 'other',
-            },
+            { label: 'Waste Container', value: 'waste-container' },
+            { label: 'Street', value: 'street' },
+            { label: 'Park', value: 'park' },
+            { label: 'Building', value: 'building' },
+            { label: 'Other', value: 'other' },
           ],
         },
         {
@@ -430,73 +405,32 @@ export const Signals: CollectionConfig = {
         },
       },
       options: [
-        {
-          label: 'Full',
-          value: 'full',
-        },
-        {
-          label: 'Dirty',
-          value: 'dirty',
-        },
-        {
-          label: 'Damaged',
-          value: 'damaged',
-        },
-        {
-          label: 'Leaves',
-          value: 'leaves',
-        },
-        {
-          label: 'Maintenance',
-          value: 'maintenance',
-        },
-        {
-          label: 'Bagged Waste',
-          value: 'bagged',
-        },
-        {
-          label: 'Fallen',
-          value: 'fallen',
-        },
-        {
-          label: 'Bulky Waste',
-          value: 'bulkyWaste',
-        },
+        { label: 'Full', value: 'full' },
+        { label: 'Dirty', value: 'dirty' },
+        { label: 'Damaged', value: 'damaged' },
+        { label: 'Leaves', value: 'leaves' },
+        { label: 'Maintenance', value: 'maintenance' },
+        { label: 'Bagged Waste', value: 'bagged' },
+        { label: 'Fallen', value: 'fallen' },
+        { label: 'Bulky Waste', value: 'bulkyWaste' },
       ],
     },
     {
       name: 'location',
-      type: 'group',
+      type: 'point',
       label: 'Location',
-      fields: [
-        {
-          name: 'latitude',
-          type: 'number',
-          required: false,
-          min: -90,
-          max: 90,
-          admin: {
-            description: 'Latitude coordinate',
-          },
-        },
-        {
-          name: 'longitude',
-          type: 'number',
-          required: false,
-          min: -180,
-          max: 180,
-          admin: {
-            description: 'Longitude coordinate',
-          },
-        },
-        {
-          name: 'address',
-          type: 'text',
-          admin: {
-            description: 'Human-readable address',
-          },
-        },
-      ],
+      admin: {
+        description: 'Geographic coordinates [longitude, latitude] of the reported issue',
+      },
+    },
+    {
+      name: 'address',
+      type: 'text',
+      label: 'Address',
+      admin: {
+        description: 'Human-readable address of the location',
+        position: 'sidebar',
+      },
     },
     {
       name: 'images',
@@ -515,23 +449,12 @@ export const Signals: CollectionConfig = {
       required: true,
       defaultValue: 'pending',
       options: [
-        {
-          label: 'Pending',
-          value: 'pending',
-        },
-        {
-          label: 'In Progress',
-          value: 'in-progress',
-        },
-        {
-          label: 'Resolved',
-          value: 'resolved',
-        },
-        {
-          label: 'Rejected',
-          value: 'rejected',
-        },
+        { label: 'Pending', value: 'pending' },
+        { label: 'In Progress', value: 'in-progress' },
+        { label: 'Resolved', value: 'resolved' },
+        { label: 'Rejected', value: 'rejected' },
       ],
+      index: true,
       admin: {
         description: 'Current status of the signal',
       },
@@ -549,8 +472,10 @@ export const Signals: CollectionConfig = {
       name: 'reporterUniqueId',
       label: 'Reporter Unique ID',
       type: 'text',
+      index: true,
       admin: {
         description: 'Unique anonymous identifier of the reporter (for follow-up)',
+        position: 'sidebar',
       },
     },
   ],

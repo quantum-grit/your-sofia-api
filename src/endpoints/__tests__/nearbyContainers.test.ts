@@ -5,8 +5,6 @@ describe('nearbyContainers endpoint (unit)', () => {
   })
 
   it('returns 400 for missing coordinates', async () => {
-    // Mock the db-postgres module to prevent ESM parse errors
-    jest.doMock('@payloadcms/db-postgres', () => ({ sql: jest.fn() }))
     const { nearbyContainers } = await import('../nearbyContainers')
 
     const mockReq: any = {
@@ -20,38 +18,39 @@ describe('nearbyContainers endpoint (unit)', () => {
     expect(body).toHaveProperty('error')
   })
 
-  it('queries db and returns containers on success', async () => {
-    jest.doMock('@payloadcms/db-postgres', () => ({ sql: jest.fn() }))
+  it('queries using Payload API and returns containers on success', async () => {
     const { nearbyContainers } = await import('../nearbyContainers')
 
-    const row = {
+    const mockContainer = {
       id: 1,
-      public_number: 'P-1',
-      location_latitude: '42.0',
-      location_longitude: '23.0',
-      location_address: 'Test St',
-      capacity_volume: '100',
-      capacity_size: 'L',
-      service_interval: '7',
-      serviced_by: 'City',
-      waste_type: 'mixed',
+      publicNumber: 'P-1',
+      location: [23.0, 42.0], // [longitude, latitude]
+      address: 'Test St',
+      capacityVolume: 100,
+      capacitySize: 'L',
+      serviceInterval: '7',
+      servicedBy: 'City',
+      wasteType: 'mixed',
       status: 'active',
       state: [],
       notes: 'Note',
-      last_cleaned: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      distance: '123.45',
-    }
-
-    const mockDb = {
-      drizzle: {
-        execute: jest.fn(async () => ({ rows: [row] })),
-      },
+      lastCleaned: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }
 
     const mockPayload: any = {
-      db: mockDb,
+      find: jest.fn(async () => ({
+        docs: [mockContainer],
+        totalDocs: 1,
+        limit: 10,
+        page: 1,
+        totalPages: 1,
+        hasPrevPage: false,
+        hasNextPage: false,
+        prevPage: null,
+        nextPage: null,
+      })),
       logger: { error: jest.fn() },
     }
 
@@ -67,6 +66,12 @@ describe('nearbyContainers endpoint (unit)', () => {
     expect(Array.isArray(body.docs)).toBe(true)
     expect(body.totalDocs).toBe(1)
     expect(body.docs[0]).toMatchObject({ id: 1, publicNumber: 'P-1', wasteType: 'mixed' })
-    expect(mockDb.drizzle.execute).toHaveBeenCalled()
+    expect(mockPayload.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'waste-containers',
+        limit: 10,
+        page: 1,
+      })
+    )
   })
 })

@@ -1,3 +1,10 @@
+jest.mock('@payloadcms/db-postgres', () => ({
+  sql: jest.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
+    strings,
+    values,
+  })),
+}))
+
 describe('nearbyContainers endpoint (unit)', () => {
   afterEach(() => {
     jest.resetModules()
@@ -21,36 +28,34 @@ describe('nearbyContainers endpoint (unit)', () => {
   it('queries using Payload API and returns containers on success', async () => {
     const { nearbyContainers } = await import('../nearbyContainers')
 
-    const mockContainer = {
+    const createdAt = new Date().toISOString()
+    const updatedAt = new Date().toISOString()
+
+    const mockRow = {
       id: 1,
-      publicNumber: 'P-1',
-      location: [23.0, 42.0], // [longitude, latitude]
+      public_number: 'P-1',
+      location: { type: 'Point', coordinates: [23.0, 42.0] },
       address: 'Test St',
-      capacityVolume: 100,
-      capacitySize: 'L',
-      serviceInterval: '7',
-      servicedBy: 'City',
-      wasteType: 'mixed',
+      capacity_volume: '100',
+      capacity_size: 'L',
+      service_interval: '7',
+      serviced_by: 'City',
+      waste_type: 'mixed',
       status: 'active',
       state: [],
       notes: 'Note',
-      lastCleaned: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      last_cleaned: null,
+      created_at: createdAt,
+      updated_at: updatedAt,
+      distance: '42.4',
     }
 
     const mockPayload: any = {
-      find: jest.fn(async () => ({
-        docs: [mockContainer],
-        totalDocs: 1,
-        limit: 10,
-        page: 1,
-        totalPages: 1,
-        hasPrevPage: false,
-        hasNextPage: false,
-        prevPage: null,
-        nextPage: null,
-      })),
+      db: {
+        drizzle: {
+          execute: jest.fn(async () => ({ rows: [mockRow] })),
+        },
+      },
       logger: { error: jest.fn() },
     }
 
@@ -66,12 +71,6 @@ describe('nearbyContainers endpoint (unit)', () => {
     expect(Array.isArray(body.docs)).toBe(true)
     expect(body.totalDocs).toBe(1)
     expect(body.docs[0]).toMatchObject({ id: 1, publicNumber: 'P-1', wasteType: 'mixed' })
-    expect(mockPayload.find).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: 'waste-containers',
-        limit: 10,
-        page: 1,
-      })
-    )
+    expect(mockPayload.db.drizzle.execute).toHaveBeenCalledTimes(1)
   })
 })

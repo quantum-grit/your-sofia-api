@@ -22,6 +22,8 @@ import * as migration_20260128_import_slatina_containers from './20260128_import
 import * as migration_20260202_190836_assignments from './20260202_190836_assignments';
 import * as migration_20260209_174317_container_location from './20260209_174317_container_location';
 import * as migration_20260209_181419_signals_point_location from './20260209_181419_signals_point_location';
+import * as migration_20260209_223000_add_spatial_indexes from './20260209_223000_add_spatial_indexes';
+import * as migration_20260302_134729_import_vitosha_ilinden_oborishte from './20260302_134729_import_vitosha_ilinden_oborishte';
 
 export const migrations = [
   {
@@ -142,6 +144,16 @@ export const migrations = [
   {
     up: migration_20260209_181419_signals_point_location.up,
     down: migration_20260209_181419_signals_point_location.down,
-    name: '20260209_181419_signals_point_location'
+    name: '20260209_181419_signals_point_location',
+  },
+  {
+    up: migration_20260209_223000_add_spatial_indexes.up,
+    down: migration_20260209_223000_add_spatial_indexes.down,
+    name: '20260209_223000_add_spatial_indexes',
+  },
+  {
+    up: migration_20260302_134729_import_vitosha_ilinden_oborishte.up,
+    down: migration_20260302_134729_import_vitosha_ilinden_oborishte.down,
+    name: '20260302_134729_import_vitosha_ilinden_oborishte'
   },
 ];

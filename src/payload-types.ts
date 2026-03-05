@@ -122,10 +122,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: 'bg' | 'en';
   widgets: {
@@ -134,6 +136,7 @@ export interface Config {
   user: User;
   jobs: {
     tasks: {
+      processWasteCollectionEvents: TaskProcessWasteCollectionEvents;
       createCollectionExport: TaskCreateCollectionExport;
       createCollectionImport: TaskCreateCollectionImport;
       schedulePublish: TaskSchedulePublish;
@@ -916,8 +919,26 @@ export interface WasteContainer {
 export interface WasteContainerObservation {
   id: number;
   container: number | WasteContainer;
-  photo: number | Media;
-  cleanedBy: number | User;
+  /**
+   * Photo of the cleaned container
+   */
+  photo?: (number | null) | Media;
+  /**
+   * Staff member who marked the container clean
+   */
+  cleanedBy?: (number | null) | User;
+  /**
+   * GPS VehicleId from the external fleet tracking system
+   */
+  vehicleId?: number | null;
+  /**
+   * FirmId from the external GPS API
+   */
+  firmId?: number | null;
+  /**
+   * Number of shooter events performed at this spot
+   */
+  collectionCount?: number | null;
   cleanedAt: string;
   notes?: string | null;
   updatedAt: string;
@@ -1258,7 +1279,12 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'createCollectionExport' | 'createCollectionImport' | 'schedulePublish';
+        taskSlug:
+          | 'inline'
+          | 'processWasteCollectionEvents'
+          | 'createCollectionExport'
+          | 'createCollectionImport'
+          | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1291,10 +1317,27 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'createCollectionExport' | 'createCollectionImport' | 'schedulePublish') | null;
+  taskSlug?:
+    | (
+        | 'inline'
+        | 'processWasteCollectionEvents'
+        | 'createCollectionExport'
+        | 'createCollectionImport'
+        | 'schedulePublish'
+      )
+    | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1777,6 +1820,9 @@ export interface WasteContainerObservationsSelect<T extends boolean = true> {
   container?: T;
   photo?: T;
   cleanedBy?: T;
+  vehicleId?: T;
+  firmId?: T;
+  collectionCount?: T;
   cleanedAt?: T;
   notes?: T;
   updatedAt?: T;
@@ -2109,6 +2155,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  meta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2204,6 +2251,24 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: number;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -2250,6 +2315,16 @@ export interface FooterSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
@@ -2257,6 +2332,22 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskProcessWasteCollectionEvents".
+ */
+export interface TaskProcessWasteCollectionEvents {
+  input: {
+    from: string;
+    to: string;
+  };
+  output: {
+    firmsProcessed: number;
+    pointsTotal: number;
+    containersUpdated: number;
+    observationsCreated: number;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

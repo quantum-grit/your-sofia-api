@@ -8,7 +8,10 @@ export const WasteContainerObservations: CollectionConfig = {
     update: ({ req: { user } }) => user?.role === 'admin',
     delete: ({ req: { user } }) => user?.role === 'admin',
   },
-  admin: { group: 'City Infrastructure' },
+  admin: {
+    group: 'City Infrastructure',
+    defaultColumns: ['container', 'cleanedAt', 'vehicleId', 'cleanedBy', 'collectionCount'],
+  },
   fields: [
     {
       name: 'container',
@@ -20,13 +23,47 @@ export const WasteContainerObservations: CollectionConfig = {
       name: 'photo',
       type: 'upload',
       relationTo: 'media',
-      required: true,
+      required: false,
+      admin: {
+        description: 'Photo of the cleaned container',
+      },
     },
     {
       name: 'cleanedBy',
       type: 'relationship',
       relationTo: 'users',
-      required: true,
+      required: false,
+      admin: {
+        description: 'Staff member who marked the container clean',
+      },
+    },
+    {
+      name: 'vehicleId',
+      label: 'Vehicle ID',
+      type: 'number',
+      required: false,
+      admin: {
+        description: 'GPS VehicleId from the external fleet tracking system',
+      },
+    },
+    {
+      name: 'firmId',
+      label: 'Firm ID',
+      type: 'number',
+      required: false,
+      admin: {
+        description: 'FirmId from the external GPS API',
+      },
+    },
+    {
+      name: 'collectionCount',
+      label: 'Collection Event Count',
+      type: 'number',
+      min: 1,
+      required: false,
+      admin: {
+        description: 'Number of shooter events performed at this spot',
+      },
     },
     {
       name: 'cleanedAt',

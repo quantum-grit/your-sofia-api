@@ -30,6 +30,7 @@ import { updates } from './endpoints/updates'
 import { updatesById } from './endpoints/updatesById'
 import { updatesOpenApi } from './endpoints/updatesOpenApi'
 import { updatesSources } from './endpoints/updatesSources'
+import { processWasteCollectionEvents } from './tasks/WasteCollection/processWasteCollectionEvents'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -144,6 +145,21 @@ export default buildConfig({
         return authHeader === `Bearer ${process.env.CRON_SECRET}`
       },
     },
-    tasks: [],
+    tasks: [processWasteCollectionEvents],
+    autoRun: [
+      {
+        cron: '*/5 * * * *', // Check every 5 minutes
+        queue: 'default', // Process 'default' queue (for manually queued jobs)
+        limit: 10,
+      },
+    ],
+    jobsCollectionOverrides: ({ defaultJobsCollection }) => {
+      if (!defaultJobsCollection.admin) {
+        defaultJobsCollection.admin = {}
+      }
+
+      defaultJobsCollection.admin.hidden = false
+      return defaultJobsCollection
+    },
   },
 })

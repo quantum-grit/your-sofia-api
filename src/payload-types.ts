@@ -896,7 +896,7 @@ export interface WasteContainer {
   /**
    * Operational status of the container
    */
-  status: 'active' | 'full' | 'maintenance' | 'inactive';
+  status: 'active' | 'full' | 'maintenance' | 'inactive' | 'pending';
   /**
    * Current state(s) of the waste container (can have multiple states)
    */

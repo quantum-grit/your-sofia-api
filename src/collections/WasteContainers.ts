@@ -182,6 +182,7 @@ export const WasteContainers: CollectionConfig = {
         { label: 'Full', value: 'full' },
         { label: 'Maintenance', value: 'maintenance' },
         { label: 'Inactive', value: 'inactive' },
+        { label: 'Pending Approval', value: 'pending' },
       ],
       defaultValue: 'active',
       index: true,

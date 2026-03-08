@@ -60,7 +60,7 @@ export interface CollectionSpot {
  */
 export function groupIntoSpots(
   events: WasteCollectionEvent[],
-  radiusMeters: number,
+  radiusMeters: number
 ): CollectionSpot[] {
   const byVehicle = new Map<number, WasteCollectionEvent[]>()
   for (const event of events) {
@@ -84,7 +84,7 @@ export function groupIntoSpots(
           collectionEvent.Latitude,
           collectionEvent.Longitude,
           spot.centroidLat,
-          spot.centroidLng,
+          spot.centroidLng
         )
         if (dist <= radiusMeters && dist < nearestDist) {
           nearest = spot

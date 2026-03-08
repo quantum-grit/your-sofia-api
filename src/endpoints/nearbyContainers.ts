@@ -95,11 +95,11 @@ export const nearbyContainers: Endpoint = {
       const containers = result.rows.map((row: any) => ({
         id: row.id,
         publicNumber: row.public_number,
-        location: {
-          latitude: parseFloat(row.location.coordinates[1]),
-          longitude: parseFloat(row.location.coordinates[0]),
-          address: row.location.address,
-        },
+        location: [
+          parseFloat(row.location.coordinates[0]),
+          parseFloat(row.location.coordinates[1]),
+        ] as [number, number],
+        address: row.address,
         capacityVolume: parseFloat(row.capacity_volume),
         capacitySize: row.capacity_size,
         serviceInterval: row.service_interval,

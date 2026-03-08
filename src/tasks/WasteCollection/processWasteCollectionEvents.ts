@@ -8,7 +8,7 @@ export { buildSyncWindow } from './gpsCollectionHelpers'
 // Task handler
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SEARCH_RADIUS_METERS = 25
+const SEARCH_RADIUS_METERS = 50
 const SPOT_CLUSTER_RADIUS_METERS = 20
 
 const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req }) => {
@@ -28,14 +28,22 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
     throw new Error(`GPS T1 failed: ${fidResponse.status} ${fidResponse.statusText}`)
   }
   const firmIds: number[] = await fidResponse.json()
+  //firmIds = firmIds.filter((id) => id === 56)
+
   payload.logger.info(`[processWasteCollectionEvents] Active firm IDs: [${firmIds.join(', ')}]`)
 
-  let collectionSpotsTotal = 0
-  let containersUpdated = 0
-  let observationsCreated = 0
+  let totalCollectionSpots = 0
+  let totalContainersUpdated = 0
+  let totalMissingContainers = 0
+  let totalObservationsCreated = 0
 
   // ── T2: For each firm, fetch collection events for the time window ─────────────────
   for (const firmId of firmIds) {
+    let collectionSpots = 0
+    let containersUpdated = 0
+    let missingContainers = 0
+    let observationsCreated = 0
+
     const vehicleUrl =
       `${baseUrl}/get_vehicle.php` +
       `?f=${firmId}` +
@@ -54,19 +62,16 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
     const collectionEvents: WasteCollectionEvent[] = await vehicleResponse.json()
 
     // Keep only data points where the collection arm (Shooter) was active
-    const shooterEvents = collectionEvents.filter((p) => p.Shooter === true)
+    const shooterEvents = collectionEvents.filter(
+      (p) => p.Shooter === true && [2, 5, 6, 8, 9, 12, 17, 19, 21].includes(p.Region) // update when imported more districts
+    )
 
     // ── Step 1: cluster raw events into geographic spots (20 m radius) ────────
     // Multiple consecutive Shooter=true pings at the same location represent
     // the truck emptying several bins at one container stop.
     const spots = groupIntoSpots(shooterEvents, SPOT_CLUSTER_RADIUS_METERS)
-    collectionSpotsTotal += spots.length
-
-    payload.logger.info(
-      `[processWasteCollectionEvents] firmId=${firmId}: ` +
-        `${collectionEvents.length} total GPS points, ` +
-        `${shooterEvents.length} shooter events → ${spots.length} collection spots`
-    )
+    collectionSpots = spots.length
+    totalCollectionSpots += spots.length
 
     // ── Step 2: match each spot to the nearest container within 25 m ──────────
 
@@ -87,7 +92,28 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
       `
 
       const result = await payload.db.drizzle.execute(nearestQuery)
-      if (!result?.rows?.length) continue
+
+      if (!result?.rows?.length) {
+        //insert container on the missing spot and mark it prending for approval
+        await payload.create({
+          collection: 'waste-containers',
+          data: {
+            publicNumber: `NEW-${spot.latestEvent.VehicleId}-${Date.now()}`,
+            location: [spot.centroidLng, spot.centroidLat],
+            status: 'pending',
+            state: [],
+            capacityVolume: 1.1,
+            capacitySize: 'standard',
+            binCount: 1,
+            wasteType: 'general',
+            source: `third_party`,
+            lastCleaned: new Date(spot.events[0].GpsTime).toISOString(),
+            notes: `Auto-created from GPS data. FirmId: ${firmId}, VehicleId: ${spot.latestEvent.VehicleId}. Please verify location and details before activating.`,
+          },
+        })
+        missingContainers++
+        continue
+      }
 
       const containerId = String((result.rows[0] as { id: unknown }).id)
       try {
@@ -126,20 +152,30 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
         )
       }
     }
+    payload.logger.info(
+      `[processWasteCollectionEvents] firmId=${firmId}: ` +
+        `${collectionEvents.length} total GPS points, ` +
+        `${shooterEvents.length} shooter events → ${spots.length} collection spots: ` +
+        `containersUpdated=${containersUpdated} observations=${observationsCreated} missingContainers=${missingContainers}`
+    )
+
+    totalContainersUpdated += containersUpdated
+    totalMissingContainers += missingContainers
+    totalObservationsCreated += observationsCreated
   }
 
   payload.logger.info(
     `[processWasteCollectionEvents] Done. ` +
-      `firms=${firmIds.length} points=${collectionSpotsTotal} ` +
-      `updated=${containersUpdated} observations=${observationsCreated}`
+      `firms=${firmIds.length} points=${totalCollectionSpots} ` +
+      `containersUpdated=${totalContainersUpdated} observations=${totalObservationsCreated} missingContainers=${totalMissingContainers}`
   )
 
   return {
     output: {
       firmsProcessed: firmIds.length,
-      pointsTotal: collectionSpotsTotal,
-      containersUpdated,
-      observationsCreated,
+      pointsTotal: totalCollectionSpots,
+      containersUpdated: totalContainersUpdated,
+      observationsCreated: totalObservationsCreated,
     },
   }
 }

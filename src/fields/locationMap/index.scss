@@ -1,0 +1,38 @@
+.location-map-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 1rem;
+
+  &__hint {
+    font-size: 0.8125rem;
+    color: var(--theme-elevation-400, #777);
+    margin: 0;
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    background: var(--theme-elevation-50, #f5f5f5);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: var(--theme-elevation-400, #777);
+  }
+
+  &__map {
+    height: 400px;
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--theme-elevation-150, #ddd);
+  }
+
+  &__coords {
+    font-size: 0.75rem;
+    color: var(--theme-elevation-400, #777);
+    font-family: monospace;
+    margin: 0;
+  }
+}

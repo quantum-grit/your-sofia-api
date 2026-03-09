@@ -847,6 +847,14 @@ export interface WasteContainer {
    */
   legacyId?: string | null;
   /**
+   * Human-readable address (e.g., "ul. Vitosha 1, Sofia")
+   */
+  address?: string | null;
+  /**
+   * Source of the container data
+   */
+  source: 'community' | 'official' | 'third_party';
+  /**
    * Unique identifier visible to citizens (e.g., SOF-001, WC-123)
    */
   publicNumber: string;
@@ -861,10 +869,6 @@ export interface WasteContainer {
    * @maxItems 2
    */
   location: [number, number];
-  /**
-   * Human-readable address (e.g., "ul. Vitosha 1, Sofia")
-   */
-  address?: string | null;
   /**
    * Container capacity in cubic meters (m³)
    */
@@ -889,10 +893,6 @@ export interface WasteContainer {
    * Type of waste this container accepts
    */
   wasteType: 'general' | 'recyclables' | 'organic' | 'glass' | 'paper' | 'plastic' | 'metal' | 'trashCan';
-  /**
-   * Source of the container data
-   */
-  source: 'community' | 'official' | 'third_party';
   /**
    * Operational status of the container
    */
@@ -1794,17 +1794,17 @@ export interface PushTokensSelect<T extends boolean = true> {
  */
 export interface WasteContainersSelect<T extends boolean = true> {
   legacyId?: T;
+  address?: T;
+  source?: T;
   publicNumber?: T;
   image?: T;
   location?: T;
-  address?: T;
   capacityVolume?: T;
   capacitySize?: T;
   binCount?: T;
   serviceInterval?: T;
   servicedBy?: T;
   wasteType?: T;
-  source?: T;
   status?: T;
   state?: T;
   notes?: T;

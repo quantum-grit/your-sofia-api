@@ -2,6 +2,7 @@ import type { CollectionConfig, Access } from 'payload'
 import { cleanContainer } from '../endpoints/cleanContainer'
 import { nearbyContainers } from '../endpoints/nearbyContainers'
 import { containersWithSignalCount } from '@/endpoints/containers-with-signals'
+import { locationMapField } from '@/fields/locationMap'
 
 const canEditContainers: Access = ({ req: { user } }) => {
   return user?.role === 'containerAdmin' || user?.role === 'admin'
@@ -30,6 +31,7 @@ export const WasteContainers: CollectionConfig = {
   },
   defaultSort: '-createdAt',
   fields: [
+    // ── Sidebar fields (rendered outside of tabs) ─────────────────────────
     {
       name: 'legacyId',
       label: 'Legacy System ID',
@@ -41,119 +43,12 @@ export const WasteContainers: CollectionConfig = {
       },
     },
     {
-      name: 'publicNumber',
-      label: 'Public Container Number',
-      type: 'text',
-      required: true,
-      unique: true,
-      index: true,
-      admin: {
-        description: 'Unique identifier visible to citizens (e.g., SOF-001, WC-123)',
-      },
-    },
-    {
-      name: 'image',
-      label: 'Container Image',
-      type: 'upload',
-      relationTo: 'media',
-      admin: {
-        description: 'Photo of the waste container',
-      },
-    },
-    {
-      name: 'location',
-      type: 'point',
-      label: 'Location',
-      required: true,
-      admin: {
-        description: 'Geographic coordinates [longitude, latitude] - enables geospatial queries',
-      },
-    },
-    {
       name: 'address',
       type: 'text',
       label: 'Address',
       admin: {
         description: 'Human-readable address (e.g., "ul. Vitosha 1, Sofia")',
         position: 'sidebar',
-      },
-    },
-    {
-      name: 'capacityVolume',
-      label: 'Capacity (cubic meters)',
-      type: 'number',
-      required: true,
-      min: 0,
-      admin: {
-        description: 'Container capacity in cubic meters (m³)',
-      },
-    },
-    {
-      name: 'capacitySize',
-      label: 'Relative Capacity Size',
-      type: 'select',
-      required: true,
-      options: [
-        { label: 'Tiny (< 0.5 m³)', value: 'tiny' },
-        { label: 'Small (0.5 - 1 m³)', value: 'small' },
-        { label: 'Standard (1 - 3 m³)', value: 'standard' },
-        { label: 'Big (3 - 5 m³)', value: 'big' },
-        { label: 'Industrial (> 5 m³)', value: 'industrial' },
-      ],
-      defaultValue: 'standard',
-      index: true,
-      admin: {
-        description: 'Relative size classification for easy filtering',
-      },
-    },
-    {
-      name: 'binCount',
-      label: 'Number of Bins',
-      type: 'number',
-      min: 1,
-      defaultValue: 1,
-      admin: {
-        description: 'Number of physical bins at this location (default: 1)',
-      },
-    },
-    {
-      name: 'serviceInterval',
-      label: 'Service Interval',
-      type: 'text',
-      required: false,
-      admin: {
-        description:
-          'How often the container is serviced (e.g., "Daily", "Every Monday and Thursday", "Twice a week")',
-      },
-    },
-    {
-      name: 'servicedBy',
-      label: 'Serviced By',
-      type: 'text',
-      required: false,
-      admin: {
-        description: 'Name of the company or service responsible for collection',
-      },
-    },
-    {
-      name: 'wasteType',
-      label: 'Waste Type',
-      type: 'select',
-      required: true,
-      options: [
-        { label: 'General Waste', value: 'general' },
-        { label: 'Recyclables', value: 'recyclables' },
-        { label: 'Organic/Compost', value: 'organic' },
-        { label: 'Glass', value: 'glass' },
-        { label: 'Paper/Cardboard', value: 'paper' },
-        { label: 'Plastic', value: 'plastic' },
-        { label: 'Metal', value: 'metal' },
-        { label: 'Trash Can', value: 'trashCan' },
-      ],
-      defaultValue: 'general',
-      index: true,
-      admin: {
-        description: 'Type of waste this container accepts',
       },
     },
     {
@@ -172,61 +67,184 @@ export const WasteContainers: CollectionConfig = {
         position: 'sidebar',
       },
     },
+    // ── Tabbed area ───────────────────────────────────────────────────────
     {
-      name: 'status',
-      label: 'Container Status',
-      type: 'select',
-      required: true,
-      options: [
-        { label: 'Active', value: 'active' },
-        { label: 'Full', value: 'full' },
-        { label: 'Maintenance', value: 'maintenance' },
-        { label: 'Inactive', value: 'inactive' },
-        { label: 'Pending Approval', value: 'pending' },
-      ],
-      defaultValue: 'active',
-      index: true,
-      admin: {
-        description: 'Operational status of the container',
-      },
-    },
-    {
-      name: 'state',
-      label: 'Container State',
-      type: 'select',
-      hasMany: true,
-      options: [
-        { label: 'Full', value: 'full' },
-        { label: 'Dirty', value: 'dirty' },
-        { label: 'Damaged', value: 'damaged' },
-        { label: 'Leaves', value: 'leaves' },
-        { label: 'Maintenance', value: 'maintenance' },
-        { label: 'Bagged Waste', value: 'bagged' },
-        { label: 'Fallen', value: 'fallen' },
-        { label: 'Bulky Waste', value: 'bulkyWaste' },
-      ],
-      admin: {
-        description: 'Current state(s) of the waste container (can have multiple states)',
-      },
-    },
-    {
-      name: 'notes',
-      label: 'Additional Notes',
-      type: 'textarea',
-      admin: {
-        description: 'Any additional information about this container',
-      },
-    },
-    {
-      name: 'lastCleaned',
-      label: 'Last Cleaned',
-      type: 'date',
-      admin: {
-        description: 'Timestamp when the container was last marked as clean',
-        date: {
-          pickerAppearance: 'dayAndTime',
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Details',
+          fields: [
+            {
+              name: 'publicNumber',
+              label: 'Public Container Number',
+              type: 'text',
+              required: true,
+              unique: true,
+              index: true,
+              admin: {
+                description: 'Unique identifier visible to citizens (e.g., SOF-001, WC-123)',
+              },
+            },
+            {
+              name: 'image',
+              label: 'Container Image',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description: 'Photo of the waste container',
+              },
+            },
+            {
+              name: 'location',
+              type: 'point',
+              label: 'Location',
+              required: true,
+              admin: {
+                description:
+                  'Geographic coordinates [longitude, latitude] - enables geospatial queries',
+              },
+            },
+            {
+              name: 'capacityVolume',
+              label: 'Capacity (cubic meters)',
+              type: 'number',
+              required: true,
+              min: 0,
+              admin: {
+                description: 'Container capacity in cubic meters (m³)',
+              },
+            },
+            {
+              name: 'capacitySize',
+              label: 'Relative Capacity Size',
+              type: 'select',
+              required: true,
+              options: [
+                { label: 'Tiny (< 0.5 m³)', value: 'tiny' },
+                { label: 'Small (0.5 - 1 m³)', value: 'small' },
+                { label: 'Standard (1 - 3 m³)', value: 'standard' },
+                { label: 'Big (3 - 5 m³)', value: 'big' },
+                { label: 'Industrial (> 5 m³)', value: 'industrial' },
+              ],
+              defaultValue: 'standard',
+              index: true,
+              admin: {
+                description: 'Relative size classification for easy filtering',
+              },
+            },
+            {
+              name: 'binCount',
+              label: 'Number of Bins',
+              type: 'number',
+              min: 1,
+              defaultValue: 1,
+              admin: {
+                description: 'Number of physical bins at this location (default: 1)',
+              },
+            },
+            {
+              name: 'serviceInterval',
+              label: 'Service Interval',
+              type: 'text',
+              required: false,
+              admin: {
+                description:
+                  'How often the container is serviced (e.g., "Daily", "Every Monday and Thursday", "Twice a week")',
+              },
+            },
+            {
+              name: 'servicedBy',
+              label: 'Serviced By',
+              type: 'text',
+              required: false,
+              admin: {
+                description: 'Name of the company or service responsible for collection',
+              },
+            },
+            {
+              name: 'wasteType',
+              label: 'Waste Type',
+              type: 'select',
+              required: true,
+              options: [
+                { label: 'General Waste', value: 'general' },
+                { label: 'Recyclables', value: 'recyclables' },
+                { label: 'Organic/Compost', value: 'organic' },
+                { label: 'Glass', value: 'glass' },
+                { label: 'Paper/Cardboard', value: 'paper' },
+                { label: 'Plastic', value: 'plastic' },
+                { label: 'Metal', value: 'metal' },
+                { label: 'Trash Can', value: 'trashCan' },
+              ],
+              defaultValue: 'general',
+              index: true,
+              admin: {
+                description: 'Type of waste this container accepts',
+              },
+            },
+            {
+              name: 'status',
+              label: 'Container Status',
+              type: 'select',
+              required: true,
+              options: [
+                { label: 'Active', value: 'active' },
+                { label: 'Full', value: 'full' },
+                { label: 'Maintenance', value: 'maintenance' },
+                { label: 'Inactive', value: 'inactive' },
+                { label: 'Pending Approval', value: 'pending' },
+              ],
+              defaultValue: 'active',
+              index: true,
+              admin: {
+                description: 'Operational status of the container',
+              },
+            },
+            {
+              name: 'state',
+              label: 'Container State',
+              type: 'select',
+              hasMany: true,
+              options: [
+                { label: 'Full', value: 'full' },
+                { label: 'Dirty', value: 'dirty' },
+                { label: 'Damaged', value: 'damaged' },
+                { label: 'Leaves', value: 'leaves' },
+                { label: 'Maintenance', value: 'maintenance' },
+                { label: 'Bagged Waste', value: 'bagged' },
+                { label: 'Fallen', value: 'fallen' },
+                { label: 'Bulky Waste', value: 'bulkyWaste' },
+              ],
+              admin: {
+                description: 'Current state(s) of the waste container (can have multiple states)',
+              },
+            },
+            {
+              name: 'notes',
+              label: 'Additional Notes',
+              type: 'textarea',
+              admin: {
+                description: 'Any additional information about this container',
+              },
+            },
+            {
+              name: 'lastCleaned',
+              label: 'Last Cleaned',
+              type: 'date',
+              admin: {
+                description: 'Timestamp when the container was last marked as clean',
+                date: {
+                  pickerAppearance: 'dayAndTime',
+                },
+              },
+            },
+          ],
         },
-      },
+        {
+          label: 'Карта',
+          fields: [locationMapField],
+        },
+      ],
     },
   ],
 }

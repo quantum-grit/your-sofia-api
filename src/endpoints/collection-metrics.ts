@@ -62,36 +62,44 @@ export const collectionMetrics: Endpoint = {
         collectedContainers: row.collected_containers,
       }))
 
-      // ── Zone stats — derived from WasteCollectionZones ────────────────────
-      const zonesResult = await payload.find({
-        collection: 'waste-collection-zones',
-        limit: 20,
-        sort: 'number',
-        overrideAccess: true,
-      })
+      // ── Zone stats via SQL ───────────────────────────────────────────────────
+      // Join waste_containers → city_districts → waste_collection_zones so we
+      // can aggregate container and collection counts per zone directly.
+      const zoneQuery = sql`
+        SELECT
+          wcz.id                                                  AS zone_id,
+          wcz.number                                              AS zone_number,
+          wcz.name                                                AS zone_name,
+          wcz.service_company_id,
+          COUNT(DISTINCT wc.id)::int                              AS total_containers,
+          COUNT(DISTINCT wco.container_id)::int                   AS collected_containers
+        FROM waste_collection_zones wcz
+        LEFT JOIN city_districts cd ON cd.waste_collection_zone_id = wcz.id
+        LEFT JOIN waste_containers wc ON wc.district_id = cd.id
+        LEFT JOIN waste_container_observations wco
+          ON  wco.container_id = wc.id
+          AND wco.cleaned_at  >= ${fromIso}::timestamptz
+          AND wco.cleaned_at  <= ${toIso}::timestamptz
+        GROUP BY wcz.id, wcz.number, wcz.name, wcz.service_company_id
+        ORDER BY wcz.number
+      `
 
-      // Build a lookup: districtId → district stats
-      const districtMap = new Map(byDistrict.map((d) => [d.districtId, d]))
-
-      const byZone = zonesResult.docs.map((zone) => {
-        const districts = (zone.districts ?? []) as string[]
-        let totalContainers = 0
-        let collectedContainers = 0
-        for (const districtId of districts) {
-          const d = districtMap.get(districtId)
-          if (d) {
-            totalContainers += d.totalContainers
-            collectedContainers += d.collectedContainers
-          }
-        }
-        return {
-          zoneNumber: zone.number,
-          zoneName: zone.name,
-          serviceCompanyId: zone.serviceCompanyId ?? null,
-          totalContainers,
-          collectedContainers,
-        }
-      })
+      const zoneResult = await payload.db.drizzle.execute(zoneQuery)
+      const byZone = (
+        zoneResult.rows as {
+          zone_number: number
+          zone_name: string
+          service_company_id: number | null
+          total_containers: number
+          collected_containers: number
+        }[]
+      ).map((row) => ({
+        zoneNumber: row.zone_number,
+        zoneName: row.zone_name,
+        serviceCompanyId: row.service_company_id ?? null,
+        totalContainers: row.total_containers,
+        collectedContainers: row.collected_containers,
+      }))
 
       // ── Time-since-last-collection histogram ───────────────────────────────
       // LEFT JOIN from all containers so that those with no observations at all

@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-import { DISTRICT_OPTIONS } from '@/utilities/districtOptions'
 
 export const WasteCollectionZones: CollectionConfig = {
   slug: 'waste-collection-zones',
@@ -9,7 +8,7 @@ export const WasteCollectionZones: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['number', 'name', 'serviceCompanyId', 'districts'],
+    defaultColumns: ['number', 'name', 'serviceCompanyId'],
     group: 'City Infrastructure',
     description: 'Maps collection zones to their administrative districts and service companies',
   },

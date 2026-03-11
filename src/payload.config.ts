@@ -87,7 +87,7 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
-    push: false, //process.env.NODE_ENV === 'development', // Enable push only in development environment
+    push: process.env.NODE_ENV === 'development', // Enable push only in development environment
     extensions: ['postgis'], // Enable PostGIS extension
     tablesFilter: [
       '!spatial_ref_sys',

@@ -22,6 +22,20 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
     `[processWasteCollectionEvents] Starting sync. Window: ${input.from} → ${input.to}`
   )
 
+  // ── Build Region → city-district Payload ID lookup ─────────────────────────
+  // CityDistrict.districtId matches the GPS API Region field (1–24).
+  const allDistricts = await payload.find({
+    collection: 'city-districts',
+    limit: 30,
+    overrideAccess: true,
+  })
+  const districtIdByRegion = new Map<number, number>(
+    allDistricts.docs.map((d) => [d.districtId as number, d.id as number])
+  )
+  const districtCodeByRegion = new Map<number, string>(
+    allDistricts.docs.map((d) => [d.districtId as number, (d as any).code as string])
+  )
+
   // ── T1: Retrieve active fleet firm IDs ─────────────────────────────────────
   const fidResponse = await fetch(`${baseUrl}/get_fid.php`, { headers: gpsHeaders })
   if (!fidResponse.ok) {
@@ -61,9 +75,7 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
     const collectionEvents: WasteCollectionEvent[] = await vehicleResponse.json()
 
     // Keep only data points where the collection arm (Shooter) was active
-    const shooterEvents = collectionEvents.filter(
-      (p) => p.Shooter === true && [2, 5, 6, 8, 9, 12, 17, 19, 21].includes(p.Region) // update when imported more districts
-    )
+    const shooterEvents = collectionEvents.filter((p) => p.Shooter === true)
 
     // ── Step 1: cluster raw events into geographic spots (20 m radius) ────────
     // Multiple consecutive Shooter=true pings at the same location represent
@@ -96,8 +108,9 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
         await payload.create({
           collection: 'waste-containers',
           data: {
-            publicNumber: `NEW-${spot.latestEvent.VehicleId}-${Date.now()}`,
+            publicNumber: `${districtCodeByRegion.get(spot.latestEvent.Region) ?? 'NEW'}-${Date.now()}`,
             location: [spot.centroidLng, spot.centroidLat],
+            district: districtIdByRegion.get(spot.latestEvent.Region) ?? null,
             status: 'pending',
             state: [],
             capacityVolume: 1.1,
@@ -115,6 +128,13 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
 
       const containerId = String((result.rows[0] as { id: unknown }).id)
       try {
+        // Fetch existing container to check if district is already set
+        const existing = await payload.findByID({
+          collection: 'waste-containers',
+          id: containerId,
+          overrideAccess: true,
+        })
+
         await payload.update({
           collection: 'waste-containers',
           id: containerId,
@@ -123,6 +143,10 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
             state: [],
             lastCleaned: new Date(spot.events[0].GpsTime).toISOString(),
             servicedBy: `FirmId: ${firmId}`,
+            // Only populate district if not already set
+            ...(existing.district == null && {
+              district: districtIdByRegion.get(spot.latestEvent.Region) ?? null,
+            }),
           },
           overrideAccess: true,
           context: { skipGpsSyncHooks: true },

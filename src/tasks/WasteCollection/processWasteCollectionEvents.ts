@@ -1,6 +1,6 @@
 import type { TaskConfig, TaskHandler } from 'payload'
 import { sql } from '@payloadcms/db-postgres'
-import { type WasteCollectionEvent, groupIntoSpots } from './gpsCollectionHelpers'
+import { type WasteCollectionEvent, buildSyncWindow, groupIntoSpots } from './gpsCollectionHelpers'
 
 export { buildSyncWindow } from './gpsCollectionHelpers'
 
@@ -18,9 +18,9 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
   const apiKey = process.env.INSPECTORAT_GPS_API_KEY ?? ''
   const gpsHeaders = { 'X-API-KEY': apiKey }
 
-  payload.logger.info(
-    `[processWasteCollectionEvents] Starting sync. Window: ${input.from} → ${input.to}`
-  )
+  const { from, to } = input?.from && input?.to ? input : buildSyncWindow()
+
+  payload.logger.info(`[processWasteCollectionEvents] Starting sync. Window: ${from} → ${to}`)
 
   // ── Build Region → city-district Payload ID lookup ─────────────────────────
   // CityDistrict.districtId matches the GPS API Region field (1–24).
@@ -60,8 +60,8 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
     const vehicleUrl =
       `${baseUrl}/get_vehicle.php` +
       `?f=${firmId}` +
-      `&from=${encodeURIComponent(input.from)}` +
-      `&to=${encodeURIComponent(input.to)}`
+      `&from=${encodeURIComponent(from)}` +
+      `&to=${encodeURIComponent(to)}`
 
     const vehicleResponse = await fetch(vehicleUrl, { headers: gpsHeaders })
     if (!vehicleResponse.ok) {

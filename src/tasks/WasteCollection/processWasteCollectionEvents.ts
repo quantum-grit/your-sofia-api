@@ -154,18 +154,16 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
 
         containersUpdated++
 
-        // Create a ContainerObservation for audit history (no photo/user for GPS sync).
-        await payload.create({
-          collection: 'waste-container-observations',
-          data: {
-            container: Number(containerId),
-            cleanedAt: new Date(spot.events[0].GpsTime).toISOString(),
-            vehicleId: spot.events[0].VehicleId,
-            firmId: spot.events[0].FirmId,
-            collectionCount: spot.events.length,
-          },
-          overrideAccess: true,
-        })
+        // Upsert a ContainerObservation for audit history (no photo/user for GPS sync).
+        await payload.db.drizzle.execute(sql`
+          INSERT INTO waste_container_observations
+            (container_id, cleaned_at, vehicle_id, firm_id, collection_count, updated_at, created_at)
+          VALUES
+            (${Number(containerId)}, ${new Date(spot.events[0].GpsTime).toISOString()}::timestamptz,
+             ${spot.events[0].VehicleId}, ${spot.events[0].FirmId}, ${spot.events.length}, NOW(), NOW())
+          ON CONFLICT (container_id, cleaned_at)
+          DO NOTHING
+        `)
 
         observationsCreated++
       } catch (err) {

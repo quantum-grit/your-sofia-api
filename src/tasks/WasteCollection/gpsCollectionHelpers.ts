@@ -132,6 +132,6 @@ export function formatApiDate(date: Date): string {
 /** Compute from/to strings for one 12-hour sync window ending at `now`. */
 export function buildSyncWindow(now: Date = new Date()): { from: string; to: string } {
   const to = new Date(now)
-  const from = new Date(now.getTime() - 12 * 60 * 60 * 1000)
+  const from = new Date(now.getTime() - 1 * 60 * 60 * 1000)
   return { from: formatApiDate(from), to: formatApiDate(to) }
 }

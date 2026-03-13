@@ -1,6 +1,11 @@
 import type { TaskConfig, TaskHandler } from 'payload'
 import { sql } from '@payloadcms/db-postgres'
-import { type WasteCollectionEvent, buildSyncWindow, groupIntoSpots } from './gpsCollectionHelpers'
+import {
+  type WasteCollectionEvent,
+  buildSyncWindow,
+  groupIntoSpots,
+  parseGpsTime,
+} from './gpsCollectionHelpers'
 
 export { buildSyncWindow } from './gpsCollectionHelpers'
 
@@ -18,7 +23,7 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
   const apiKey = process.env.INSPECTORAT_GPS_API_KEY ?? ''
   const gpsHeaders = { 'X-API-KEY': apiKey }
 
-  const { from, to } = input?.from && input?.to ? input : buildSyncWindow()
+  const { from, to } = input?.from && input?.to ? input : buildSyncWindow(1)
 
   payload.logger.info(`[processWasteCollectionEvents] Starting sync. Window: ${from} → ${to}`)
 
@@ -118,7 +123,7 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
             binCount: 1,
             wasteType: 'general',
             source: `third_party`,
-            lastCleaned: new Date(spot.events[0].GpsTime).toISOString(),
+            lastCleaned: parseGpsTime(spot.events[0].GpsTime).toISOString(),
             notes: `Auto-created from GPS data. FirmId: ${firmId}, VehicleId: ${spot.latestEvent.VehicleId}. Please verify location and details before activating.`,
           },
         })
@@ -141,7 +146,7 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
           data: {
             status: 'active',
             state: [],
-            lastCleaned: new Date(spot.events[0].GpsTime).toISOString(),
+            lastCleaned: parseGpsTime(spot.events[0].GpsTime).toISOString(),
             servicedBy: `FirmId: ${firmId}`,
             // Only populate district if not already set
             ...(existing.district == null && {
@@ -159,7 +164,7 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
           INSERT INTO waste_container_observations
             (container_id, cleaned_at, vehicle_id, firm_id, collection_count, updated_at, created_at)
           VALUES
-            (${Number(containerId)}, ${new Date(spot.events[0].GpsTime).toISOString()}::timestamptz,
+            (${Number(containerId)}, ${parseGpsTime(spot.events[0].GpsTime).toISOString()},
              ${spot.events[0].VehicleId}, ${spot.events[0].FirmId}, ${spot.events.length}, NOW(), NOW())
           ON CONFLICT (container_id, cleaned_at)
           DO NOTHING
@@ -208,8 +213,7 @@ export const processWasteCollectionEvents: TaskConfig<'processWasteCollectionEve
   slug: 'processWasteCollectionEvents',
   label: 'Process Waste Collection Events',
   schedule: [
-    { cron: '0 7 * * *', queue: 'default' },
-    { cron: '0 19 * * *', queue: 'default' },
+    { cron: '02 * * * *', queue: 'default' }, // Run at 2 minutes past every hour
   ],
   inputSchema: [
     { name: 'from', type: 'text', required: true },

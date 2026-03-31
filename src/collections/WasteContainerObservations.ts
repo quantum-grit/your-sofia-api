@@ -4,6 +4,10 @@ import { isAdmin } from '@/access/isAdmin'
 
 export const WasteContainerObservations: CollectionConfig = {
   slug: 'waste-container-observations',
+  labels: {
+    singular: 'Наблюдение на контейнер',
+    plural: 'Наблюдения на контейнери',
+  },
   access: {
     admin: canViewCityInfrastructure,
     create: ({ req: { user } }) => !!user,
@@ -12,64 +16,69 @@ export const WasteContainerObservations: CollectionConfig = {
     delete: isAdmin,
   },
   admin: {
-    group: 'City Infrastructure',
+    group: 'Градска инфраструктура',
     defaultColumns: ['container', 'cleanedAt', 'vehicleId', 'cleanedBy', 'collectionCount'],
+    description: 'Наблюдения при събиране на отпадъци и почистване',
   },
   fields: [
     {
       name: 'container',
+      label: 'Контейнер',
       type: 'relationship',
       relationTo: 'waste-containers',
       required: true,
     },
     {
       name: 'photo',
+      label: 'Снимка',
       type: 'upload',
       relationTo: 'media',
       required: false,
       admin: {
-        description: 'Photo of the cleaned container',
+        description: 'Снимка на почистения контейнер',
       },
     },
     {
       name: 'cleanedBy',
+      label: 'Почистено от',
       type: 'relationship',
       relationTo: 'users',
       required: false,
       admin: {
-        description: 'Staff member who marked the container clean',
+        description: 'Служител, маркирал контейнера като почистен',
       },
     },
     {
       name: 'vehicleId',
-      label: 'Vehicle ID',
+      label: 'Идентификатор на превозно средство',
       type: 'number',
       required: false,
       admin: {
-        description: 'GPS VehicleId from the external fleet tracking system',
+        description: 'GPS идентификатор на превозното средство от външната система за проследяване',
       },
     },
     {
       name: 'firmId',
-      label: 'Firm ID',
+      label: 'Идентификатор на фирма',
       type: 'number',
       required: false,
       admin: {
-        description: 'FirmId from the external GPS API',
+        description: 'FirmId от външния GPS API',
       },
     },
     {
       name: 'collectionCount',
-      label: 'Collection Event Count',
+      label: 'Брой събирания',
       type: 'number',
       min: 1,
       required: false,
       admin: {
-        description: 'Number of shooter events performed at this spot',
+        description: 'Брой на събирателните събития, извършени на това място',
       },
     },
     {
       name: 'cleanedAt',
+      label: 'Почистено на',
       type: 'date',
       required: true,
       admin: {
@@ -80,6 +89,7 @@ export const WasteContainerObservations: CollectionConfig = {
     },
     {
       name: 'notes',
+      label: 'Бележки',
       type: 'textarea',
     },
   ],

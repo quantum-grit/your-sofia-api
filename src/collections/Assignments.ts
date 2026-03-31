@@ -14,10 +14,14 @@ const canReadAssignments: Access = ({ req: { user } }) => {
 
 export const Assignments: CollectionConfig = {
   slug: 'assignments',
+  labels: {
+    singular: 'Задание',
+    plural: 'Задания',
+  },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'status', 'assignedTo', 'dueDate', 'createdAt'],
-    group: 'City Infrastructure',
+    group: 'Градска инфраструктура',
   },
   access: {
     admin: canViewCityInfrastructure,
@@ -29,135 +33,135 @@ export const Assignments: CollectionConfig = {
   fields: [
     {
       name: 'title',
-      label: 'Assignment Title',
+      label: 'Заглавие на заданието',
       type: 'text',
       required: true,
       admin: {
-        description: 'Title of the cleaning assignment',
+        description: 'Заглавие на заданието за почистване',
       },
     },
     {
       name: 'description',
-      label: 'Description',
+      label: 'Описание',
       type: 'textarea',
       admin: {
-        description: 'Additional notes or instructions for this assignment',
+        description: 'Допълнителни бележки или инструкции за заданието',
       },
     },
     {
       name: 'containers',
-      label: 'Waste Containers',
+      label: 'Контейнери за отпадъци',
       type: 'relationship',
       relationTo: 'waste-containers',
       hasMany: true,
       required: true,
       admin: {
-        description: 'Select multiple containers for this cleaning assignment',
+        description: 'Изберете контейнерите за това задание за почистване',
       },
     },
     {
       name: 'assignedTo',
-      label: 'Assigned To',
+      label: 'Възложено на',
       type: 'relationship',
       relationTo: 'users',
       required: true,
       admin: {
-        description: 'User responsible for completing this assignment',
+        description: 'Потребител, отговорен за изпълнение на заданието',
       },
     },
     {
       name: 'activities',
-      label: 'Activities to Perform',
+      label: 'Дейности за извършване',
       type: 'select',
       hasMany: true,
       required: true,
       options: [
         {
-          label: 'Full Container',
+          label: 'Пълен контейнер',
           value: 'full',
         },
         {
-          label: 'Dirty',
+          label: 'Замърсен',
           value: 'dirty',
         },
         {
-          label: 'Damaged',
+          label: 'Повреден',
           value: 'damaged',
         },
         {
-          label: 'Leaves',
+          label: 'Листа',
           value: 'leaves',
         },
         {
-          label: 'Maintenance',
+          label: 'Поддръжка',
           value: 'maintenance',
         },
         {
-          label: 'Bagged Waste',
+          label: 'Боклук в торби',
           value: 'bagged',
         },
         {
-          label: 'Fallen Container',
+          label: 'Паднал контейнер',
           value: 'fallen',
         },
         {
-          label: 'Bulky Waste',
+          label: 'Едрогабаритен боклук',
           value: 'bulkyWaste',
         },
       ],
       defaultValue: ['full'],
       admin: {
-        description: 'Types of cleaning/maintenance activities to be performed',
+        description: 'Видове дейности за почистване/поддръжка',
       },
     },
     {
       name: 'status',
-      label: 'Status',
+      label: 'Статус',
       type: 'select',
       required: true,
       defaultValue: 'pending',
       options: [
         {
-          label: 'Pending',
+          label: 'Чакащ',
           value: 'pending',
         },
         {
-          label: 'In Progress',
+          label: 'В изпълнение',
           value: 'in-progress',
         },
         {
-          label: 'Completed',
+          label: 'Приключен',
           value: 'completed',
         },
         {
-          label: 'Cancelled',
+          label: 'Отменен',
           value: 'cancelled',
         },
       ],
       admin: {
-        description: 'Current status of the assignment',
+        description: 'Текущ статус на заданието',
       },
     },
     {
       name: 'dueDate',
-      label: 'Due Date',
+      label: 'Краен срок',
       type: 'date',
       admin: {
         date: {
           pickerAppearance: 'dayAndTime',
         },
-        description: 'When this assignment should be completed',
+        description: 'Кога трябва да бъде приключено заданието',
       },
     },
     {
       name: 'completedAt',
-      label: 'Completed At',
+      label: 'Приключено на',
       type: 'date',
       admin: {
         date: {
           pickerAppearance: 'dayAndTime',
         },
-        description: 'When this assignment was marked as completed',
+        description: 'Кога заданието е отбелязано като приключено',
         readOnly: true,
       },
     },

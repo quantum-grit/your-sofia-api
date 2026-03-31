@@ -5,14 +5,14 @@ import { isAdmin } from '@/access/isAdmin'
 export const CityDistricts: CollectionConfig = {
   slug: 'city-districts',
   labels: {
-    singular: 'City District',
-    plural: 'City Districts',
+    singular: 'Административен район',
+    plural: 'Административни райони',
   },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['districtId', 'name', 'wasteCollectionZone'],
-    group: 'City Infrastructure',
-    description: 'Sofia administrative districts (1–24)',
+    group: 'Градска инфраструктура',
+    description: 'Административни райони на София (1–24)',
   },
   access: {
     admin: canViewCityInfrastructure,
@@ -25,7 +25,7 @@ export const CityDistricts: CollectionConfig = {
   fields: [
     {
       name: 'districtId',
-      label: 'District ID',
+      label: 'Номер на район',
       type: 'number',
       required: true,
       unique: true,
@@ -33,21 +33,21 @@ export const CityDistricts: CollectionConfig = {
       max: 24,
       index: true,
       admin: {
-        description: 'Numeric district identifier (1–24)',
+        description: 'Цифров идентификатор на района (1–24)',
       },
     },
     {
       name: 'name',
-      label: 'District Name',
+      label: 'Наименование на района',
       type: 'text',
       required: true,
       admin: {
-        description: 'Name of the Sofia administrative district',
+        description: 'Наименование на административния район на София',
       },
     },
     {
       name: 'code',
-      label: 'District Code',
+      label: 'Код на района',
       type: 'text',
       required: true,
       unique: true,
@@ -56,17 +56,17 @@ export const CityDistricts: CollectionConfig = {
       maxLength: 3,
       admin: {
         description:
-          'Three-letter uppercase code: R + first two letters of the name, or R + initials for multi-word names (e.g. RKP for Krasna Polyana)',
+          'Тризначен код: R + първите две букви, или R + инициали за многоименни райони (напр. RKP за Красна поляна)',
       },
     },
     {
       name: 'wasteCollectionZone',
-      label: 'Waste Collection Zone',
+      label: 'Зона за събиране на отпадъци',
       type: 'relationship',
       relationTo: 'waste-collection-zones',
       required: false,
       admin: {
-        description: 'The waste collection zone this district belongs to',
+        description: 'Зоната за събиране на отпадъци, към която принадлежи районът',
       },
     },
   ],

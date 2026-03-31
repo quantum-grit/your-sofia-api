@@ -5,13 +5,13 @@ import { isAdmin } from '@/access/isAdmin'
 
 export const GeocodeAddresses: CollectionConfig = {
   slug: 'geocode-addresses',
-  labels: { singular: 'Geocode Address', plural: 'Geocode Addresses' },
+  labels: { singular: 'Геокодиран адрес', plural: 'Геокодирани адреси' },
   admin: {
     useAsTitle: 'address',
     defaultColumns: ['address', 'districtHint', 'location', 'updatedAt'],
-    group: 'City Infrastructure',
+    group: 'Градска инфраструктура',
     description:
-      'Street address geocoding cache. Missing coordinates = OpenStreetMap Nominatim API returned no results.',
+      'Кеш за геокодиране на адреси. Липсващи координати = Nominatim API не е върнал резултати.',
   },
   timestamps: true,
   access: {
@@ -24,23 +24,23 @@ export const GeocodeAddresses: CollectionConfig = {
   fields: [
     {
       name: 'address',
-      label: 'Street Address',
+      label: 'Улица и номер',
       type: 'text',
       required: true,
-      admin: { description: 'Normalized street address (without street-type prefix)' },
+      admin: { description: 'Нормализиран уличен адрес (без префикс за тип улица)' },
     },
     {
       name: 'districtHint',
-      label: 'District',
+      label: 'Район',
       type: 'text',
       required: true,
-      admin: { description: 'District code passed to Nominatim (e.g. TRIADICA)' },
+      admin: { description: 'Код на района, подаден към Nominatim (напр. TRIADICA)' },
     },
     {
       name: 'location',
-      label: 'Coordinates',
+      label: 'Координати',
       type: 'point',
-      admin: { description: 'Coordinates — missing means address was not found' },
+      admin: { description: 'Координати — липсващи означава, че адресът не е намерен' },
     },
     {
       type: 'collapsible',

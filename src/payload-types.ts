@@ -842,7 +842,7 @@ export interface PushToken {
   createdAt: string;
 }
 /**
- * Sofia administrative districts (1–24)
+ * Административни райони на София (1–24)
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "city-districts".
@@ -850,26 +850,26 @@ export interface PushToken {
 export interface CityDistrict {
   id: number;
   /**
-   * Numeric district identifier (1–24)
+   * Цифров идентификатор на района (1–24)
    */
   districtId: number;
   /**
-   * Name of the Sofia administrative district
+   * Наименование на административния район на София
    */
   name: string;
   /**
-   * Three-letter uppercase code: R + first two letters of the name, or R + initials for multi-word names (e.g. RKP for Krasna Polyana)
+   * Тризначен код: R + първите две букви, или R + инициали за многоименни райони (напр. RKP за Красна поляна)
    */
   code: string;
   /**
-   * The waste collection zone this district belongs to
+   * Зоната за събиране на отпадъци, към която принадлежи районът
    */
   wasteCollectionZone?: (number | null) | WasteCollectionZone;
   updatedAt: string;
   createdAt: string;
 }
 /**
- * Maps collection zones to their administrative districts and service companies
+ * Карта на зоните за събиране към административните райони и обслужващите фирми
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "waste-collection-zones".
@@ -877,22 +877,22 @@ export interface CityDistrict {
 export interface WasteCollectionZone {
   id: number;
   /**
-   * Zone number 1–10
+   * Номер на зоната 1–10
    */
   number: number;
   /**
-   * Display name (e.g. "Зона 1")
+   * Показвано наименование (напр. "Зона 1")
    */
   name: string;
   /**
-   * Numeric ID of the waste collection company responsible for this zone
+   * Цифров идентификатор на фирмата, отговорна за тази зона
    */
   serviceCompanyId?: number | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
- * Manage waste containers across the city
+ * Управление на контейнерите за отпадъци в града
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "waste-containers".
@@ -900,92 +900,94 @@ export interface WasteCollectionZone {
 export interface WasteContainer {
   id: number;
   /**
-   * Original ID from the legacy system (for migration tracking)
+   * Оригинален идентификатор от стария систем (за проследяване на миграцията)
    */
   legacyId?: string | null;
   /**
-   * Human-readable address (e.g., "ul. Vitosha 1, Sofia")
+   * Четим адрес (напр. "ул. Витоша 1, София")
    */
   address?: string | null;
   /**
-   * Sofia administrative district (populated from GPS data going forward)
+   * Административен район на София (попълва се от GPS данни)
    */
   district?: (number | null) | CityDistrict;
   /**
-   * Source of the container data
+   * Произход на данните за контейнера
    */
   source: 'community' | 'official' | 'third_party';
   /**
-   * Unique identifier visible to citizens (e.g., SOF-001, WC-123)
+   * Уникален идентификатор, видим за гражданите (напр. SOF-001, WC-123)
    */
   publicNumber: string;
   /**
-   * Photo of the waste container
+   * Снимка на контейнера за отпадъци
    */
   image?: (number | null) | Media;
   /**
-   * Geographic coordinates [longitude, latitude] - enables geospatial queries
+   * Географски координати [дължина, ширина] – позволява геопространствени заявки
    *
    * @minItems 2
    * @maxItems 2
    */
   location: [number, number];
   /**
-   * Container capacity in cubic meters (m³)
+   * Вместимост на контейнера в кубически метри (m³)
    */
   capacityVolume: number;
   /**
-   * Relative size classification for easy filtering
+   * Относителна класификация на размера за лесно филтриране
    */
   capacitySize: 'tiny' | 'small' | 'standard' | 'big' | 'industrial';
   /**
-   * Number of physical bins at this location (default: 1)
+   * Брой физически контейнери на това място (по подразбиране: 1)
    */
   binCount?: number | null;
   /**
-   * How often the container is serviced (e.g., "Daily", "Every Monday and Thursday", "Twice a week")
+   * Колко често се обслужва контейнерът (напр. "Ежедневно", "Всеки понеделник и четвъртък", "Два пъти седмично")
    */
   serviceInterval?: string | null;
   /**
-   * ISO weekday numbers (1=Mon, 7=Sun) from schedule import
+   * ISO номера на делничния ден (1=Пон, 7=Нед), от импорт на график
    */
   collectionDaysOfWeek?: ('1' | '2' | '3' | '4' | '5' | '6' | '7')[] | null;
   /**
-   * How many times per day this container is collected (1 or 2)
+   * Колко пъти на ден се събира този контейнер (1 или 2)
    */
   collectionTimesPerDay?: number | null;
   /**
-   * e.g. "2026-02/TRIADICA/1100" — populated by import task
+   * напр. "2026-02/TRIADICA/1100" — попълва се от задача за импорт
    */
   scheduleSource?: string | null;
   /**
-   * Name of the company or service responsible for collection
+   * Наименование на фирмата или услугата, отговорна за събирането
    */
   servicedBy?: string | null;
   /**
-   * Type of waste this container accepts
+   * Вид отпадък, приеман от контейнера
    */
   wasteType: 'general' | 'recyclables' | 'organic' | 'glass' | 'paper' | 'plastic' | 'metal' | 'trashCan';
   /**
-   * Operational status of the container
+   * Оперативен статус на контейнера
    */
   status: 'active' | 'full' | 'maintenance' | 'inactive' | 'pending';
   /**
-   * Current state(s) of the waste container (can have multiple states)
+   * Текущо(и) състояние(я) на контейнера (може да има повече от едно)
    */
   state?: ('full' | 'dirty' | 'damaged' | 'leaves' | 'maintenance' | 'bagged' | 'fallen' | 'bulkyWaste')[] | null;
   /**
-   * Any additional information about this container
+   * Допълнителна информация за контейнера
    */
   notes?: string | null;
   /**
-   * Timestamp when the container was last marked as clean
+   * Дата и час, когато контейнерът е бил последно почистен
    */
   lastCleaned?: string | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
+ * Наблюдения при събиране на отпадъци и почистване
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "waste-container-observations".
  */
@@ -993,23 +995,23 @@ export interface WasteContainerObservation {
   id: number;
   container: number | WasteContainer;
   /**
-   * Photo of the cleaned container
+   * Снимка на почистения контейнер
    */
   photo?: (number | null) | Media;
   /**
-   * Staff member who marked the container clean
+   * Служител, маркирал контейнера като почистен
    */
   cleanedBy?: (number | null) | User;
   /**
-   * GPS VehicleId from the external fleet tracking system
+   * GPS идентификатор на превозното средство от външната система за проследяване
    */
   vehicleId?: number | null;
   /**
-   * FirmId from the external GPS API
+   * FirmId от външния GPS API
    */
   firmId?: number | null;
   /**
-   * Number of shooter events performed at this spot
+   * Брой на събирателните събития, извършени на това място
    */
   collectionCount?: number | null;
   cleanedAt: string;
@@ -1018,7 +1020,7 @@ export interface WasteContainerObservation {
   createdAt: string;
 }
 /**
- * Citizen-reported issues and problems
+ * Сигнали от граждани за проблеми
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "signals".
@@ -1026,15 +1028,15 @@ export interface WasteContainerObservation {
 export interface Signal {
   id: number;
   /**
-   * Brief description of the signal
+   * Кратко описание на сигнала
    */
   title: string;
   /**
-   * Detailed description of the problem
+   * Подробно описание на проблема
    */
   description?: string | null;
   /**
-   * Type of issue being reported
+   * Вид на сигнализирания проблем
    */
   category:
     | 'waste-container'
@@ -1045,50 +1047,50 @@ export interface Signal {
     | 'public-transport'
     | 'other';
   /**
-   * Reference to a related city object (e.g., waste container)
+   * Препратка към свързан градски обект (напр. контейнер за отпадъци)
    */
   cityObject?: {
     type?: ('waste-container' | 'street' | 'park' | 'building' | 'other') | null;
     /**
-     * ID or reference number of the related object
+     * Идентификатор или референтен номер на свързания обект
      */
     referenceId?: string | null;
     /**
-     * Name or description of the related object
+     * Наименование или описание на свързания обект
      */
     name?: string | null;
   };
   /**
-   * State of the waste container (only for waste container signals)
+   * Състояние на контейнера за отпадъци (само за сигнали за контейнери)
    */
   containerState?:
     | ('full' | 'dirty' | 'damaged' | 'leaves' | 'maintenance' | 'bagged' | 'fallen' | 'bulkyWaste')[]
     | null;
   /**
-   * Geographic coordinates [longitude, latitude] of the reported issue
+   * Географски координати [дължина, ширина] на сигнализирания проблем
    *
    * @minItems 2
    * @maxItems 2
    */
   location?: [number, number] | null;
   /**
-   * Human-readable address of the location
+   * Четим адрес на местоположението
    */
   address?: string | null;
   /**
-   * Photos of the problem
+   * Снимки на проблема
    */
   images?: (number | Media)[] | null;
   /**
-   * Current status of the signal
+   * Текущ статус на сигнала
    */
   status: 'pending' | 'in-progress' | 'resolved' | 'rejected';
   /**
-   * Internal notes from administrators
+   * Вътрешни бележки от администратори
    */
   adminNotes?: string | null;
   /**
-   * Unique anonymous identifier of the reporter (for follow-up)
+   * Уникален анонимен идентификатор на подателя (за обратна връзка)
    */
   reporterUniqueId?: string | null;
   updatedAt: string;
@@ -1101,42 +1103,42 @@ export interface Signal {
 export interface Assignment {
   id: number;
   /**
-   * Title of the cleaning assignment
+   * Заглавие на заданието за почистване
    */
   title: string;
   /**
-   * Additional notes or instructions for this assignment
+   * Допълнителни бележки или инструкции за заданието
    */
   description?: string | null;
   /**
-   * Select multiple containers for this cleaning assignment
+   * Изберете контейнерите за това задание за почистване
    */
   containers: (number | WasteContainer)[];
   /**
-   * User responsible for completing this assignment
+   * Потребител, отговорен за изпълнение на заданието
    */
   assignedTo: number | User;
   /**
-   * Types of cleaning/maintenance activities to be performed
+   * Видове дейности за почистване/поддръжка
    */
   activities: ('full' | 'dirty' | 'damaged' | 'leaves' | 'maintenance' | 'bagged' | 'fallen' | 'bulkyWaste')[];
   /**
-   * Current status of the assignment
+   * Текущ статус на заданието
    */
   status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
   /**
-   * When this assignment should be completed
+   * Кога трябва да бъде приключено заданието
    */
   dueDate?: string | null;
   /**
-   * When this assignment was marked as completed
+   * Кога заданието е отбелязано като приключено
    */
   completedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
- * Street address geocoding cache. Missing coordinates = OpenStreetMap Nominatim API returned no results.
+ * Кеш за геокодиране на адреси. Липсващи координати = Nominatim API не е върнал резултати.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "geocode-addresses".
@@ -1144,15 +1146,15 @@ export interface Assignment {
 export interface GeocodeAddress {
   id: number;
   /**
-   * Normalized street address (without street-type prefix)
+   * Нормализиран уличен адрес (без префикс за тип улица)
    */
   address: string;
   /**
-   * District code passed to Nominatim (e.g. TRIADICA)
+   * Код на района, подаден към Nominatim (напр. TRIADICA)
    */
   districtHint: string;
   /**
-   * Coordinates — missing means address was not found
+   * Координати — липсващи означава, че адресът не е намерен
    *
    * @minItems 2
    * @maxItems 2

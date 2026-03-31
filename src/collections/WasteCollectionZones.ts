@@ -7,14 +7,14 @@ const canEditZones: Access = ({ req: { user } }) =>
 export const WasteCollectionZones: CollectionConfig = {
   slug: 'waste-collection-zones',
   labels: {
-    singular: 'Waste Collection Zone',
-    plural: 'Waste Collection Zones',
+    singular: 'Зона за събиране на отпадъци',
+    plural: 'Зони за събиране на отпадъци',
   },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['number', 'name', 'serviceCompanyId'],
-    group: 'City Infrastructure',
-    description: 'Maps collection zones to their administrative districts and service companies',
+    group: 'Градска инфраструктура',
+    description: 'Карта на зоните за събиране към административните райони и обслужващите фирми',
   },
   access: {
     admin: canViewCityInfrastructure,
@@ -27,32 +27,32 @@ export const WasteCollectionZones: CollectionConfig = {
   fields: [
     {
       name: 'number',
-      label: 'Zone Number',
+      label: 'Номер на зоната',
       type: 'number',
       required: true,
       unique: true,
       min: 1,
       max: 10,
       admin: {
-        description: 'Zone number 1–10',
+        description: 'Номер на зоната 1–10',
       },
     },
     {
       name: 'name',
-      label: 'Zone Name',
+      label: 'Наименование на зоната',
       type: 'text',
       required: true,
       admin: {
-        description: 'Display name (e.g. "Зона 1")',
+        description: 'Показвано наименование (напр. "Зона 1")',
       },
     },
     {
       name: 'serviceCompanyId',
-      label: 'Service Company ID',
+      label: 'Идентификатор на фирмата',
       type: 'number',
       required: false,
       admin: {
-        description: 'Numeric ID of the waste collection company responsible for this zone',
+        description: 'Цифров идентификатор на фирмата, отговорна за тази зона',
       },
     },
   ],

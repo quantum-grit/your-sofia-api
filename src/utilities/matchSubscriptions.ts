@@ -19,6 +19,7 @@
 
 import type { Payload } from 'payload'
 import { Expo } from 'expo-server-sdk'
+import { sql } from '@payloadcms/db-postgres'
 
 /** Shape of the news document once categories + district are generated into payload-types.ts */
 interface NewsWithSubscriptionFields {
@@ -143,13 +144,13 @@ export async function matchSubscriptions(
         const areaFilters = filters.filter((f) => f.filterType === 'area')
 
         for (const pf of pointFilters) {
-          if (pf.latitude === null || pf.latitude === undefined) continue
-          if (pf.longitude === null || pf.longitude === undefined) continue
-          if (!pf.radius) continue
+          if (!Number.isFinite(pf.latitude) || !Number.isFinite(pf.longitude)) continue
+          if (!Number.isFinite(pf.radius) || !pf.radius) continue
+          if (!Number.isFinite(newsLng) || !Number.isFinite(newsLat)) continue
 
           try {
             const rows = (await (payload.db as any).drizzle.execute(
-              `SELECT ST_DWithin(
+              sql`SELECT ST_DWithin(
                 ST_MakePoint(${newsLng}, ${newsLat})::geography,
                 ST_MakePoint(${pf.longitude}, ${pf.latitude})::geography,
                 ${pf.radius}
@@ -168,11 +169,12 @@ export async function matchSubscriptions(
 
         for (const af of areaFilters) {
           if (!af.polygon) continue
+          if (!Number.isFinite(newsLng) || !Number.isFinite(newsLat)) continue
           try {
             const polygonJson = JSON.stringify(af.polygon)
             const rows = (await (payload.db as any).drizzle.execute(
-              `SELECT ST_Contains(
-                ST_GeomFromGeoJSON('${polygonJson.replace(/'/g, "''")}'),
+              sql`SELECT ST_Contains(
+                ST_GeomFromGeoJSON(${polygonJson}),
                 ST_MakePoint(${newsLng}, ${newsLat})
               ) AS match`
             )) as { rows: { match: boolean }[] }

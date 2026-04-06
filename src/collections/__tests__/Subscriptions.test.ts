@@ -16,11 +16,12 @@ describe('Subscriptions collection access', () => {
   })
 
   describe('access.read (ownerOrAdmin)', () => {
-    it('allows authenticated users', () => {
-      expect(Subscriptions.access!.read!(makeReq({ role: 'user' }) as any)).toBe(true)
+    it('returns a where-clause filter for regular authenticated users (own subscription only)', () => {
+      const result = Subscriptions.access!.read!(makeReq({ role: 'user', id: 'u1' }) as any)
+      expect(result).toEqual({ user: { equals: 'u1' } })
     })
 
-    it('allows admin', () => {
+    it('allows admin (returns true)', () => {
       expect(Subscriptions.access!.read!(makeReq({ role: 'admin' }) as any)).toBe(true)
     })
 
@@ -30,8 +31,9 @@ describe('Subscriptions collection access', () => {
   })
 
   describe('access.update (ownerOrAdmin)', () => {
-    it('allows authenticated users', () => {
-      expect(Subscriptions.access!.update!(makeReq({ role: 'user' }) as any)).toBe(true)
+    it('returns a where-clause filter for regular authenticated users (own subscription only)', () => {
+      const result = Subscriptions.access!.update!(makeReq({ role: 'user', id: 'u2' }) as any)
+      expect(result).toEqual({ user: { equals: 'u2' } })
     })
 
     it('denies unauthenticated requests', () => {

@@ -1,12 +1,15 @@
 import type { CollectionConfig, Access } from 'payload'
 
 /**
- * Custom access: anyone can create; only the owner (identified by their push
- * token string) can read or update their own subscription.
+ * Admins can access all subscriptions.
+ * Authenticated regular users can only access their own subscription (linked via the user field).
+ * Anonymous devices use the custom /api/subscriptions/mine endpoint instead.
  */
 const ownerOrAdmin: Access = ({ req }) => {
-  if (req.user) return true // admins / authenticated users can always read
-  return false
+  if (!req.user) return false
+  if (req.user.role === 'admin') return true
+  // Restrict non-admin authenticated users to their own subscription only
+  return { user: { equals: req.user.id } }
 }
 
 export const Subscriptions: CollectionConfig = {

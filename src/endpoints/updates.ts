@@ -176,8 +176,38 @@ export const updates: Endpoint = {
       rawQuery.timespanEndGte = dayStart.toISOString()
     }
 
-    return proxyUpdatesUpstreamGet('/messages', rawQuery, {
+    // Resolve the category filter before forwarding (the upstream may not honour it)
+    const categoriesFilter =
+      typeof rawQuery.categories === 'string' && rawQuery.categories.trim()
+        ? rawQuery.categories
+            .split(',')
+            .map((s) => s.trim().toLowerCase())
+            .filter(Boolean)
+        : null
+
+    const upstreamResponse = await proxyUpdatesUpstreamGet('/messages', rawQuery, {
       logger: req.payload?.logger,
     })
+
+    // Post-filter by categories when requested — the upstream API returns all messages
+    // regardless of the `categories` param; filtering must be applied here.
+    if (categoriesFilter && categoriesFilter.length > 0 && upstreamResponse.ok) {
+      try {
+        const body = await upstreamResponse.json()
+        const messages: { categories?: string[] }[] = body.messages ?? []
+        const filtered = messages.filter(
+          (msg) =>
+            Array.isArray(msg.categories) &&
+            msg.categories.some((cat) => categoriesFilter.includes(cat.toLowerCase()))
+        )
+        return Response.json({ ...body, messages: filtered })
+      } catch (err) {
+        req.payload?.logger?.error({ err }, '[updates] Failed to post-filter by categories')
+        // Return original response untouched on parse error
+        return upstreamResponse
+      }
+    }
+
+    return upstreamResponse
   },
 }

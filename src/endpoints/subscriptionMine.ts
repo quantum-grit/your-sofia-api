@@ -89,7 +89,7 @@ export const subscriptionMinePatch: Endpoint = {
     // 3. Parse body
     let body: Record<string, any> = {}
     try {
-      body = await req.json()
+      body = (await req.json?.()) ?? {}
     } catch (e) {
       return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
     }

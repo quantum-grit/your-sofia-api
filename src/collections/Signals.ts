@@ -30,6 +30,7 @@ const canUpdate: Access = async ({ req, data, id }) => {
       const existingSignal = await req.payload.findByID({
         collection: 'signals',
         id: id.toString(),
+        overrideAccess: true,
       })
 
       // Check if the reporterUniqueId matches
@@ -183,6 +184,7 @@ export const Signals: CollectionConfig = {
             // Find existing active signals from same reporter for same container
             const existingSignals = await req.payload.find({
               collection: 'signals',
+              overrideAccess: true,
               where: {
                 and: [
                   {
@@ -299,6 +301,17 @@ export const Signals: CollectionConfig = {
           }
         }
 
+        return doc
+      },
+    ],
+    afterRead: [
+      ({ doc, req }) => {
+        // Strip reporterUniqueId from responses for non-admin users.
+        // Non-admins can still filter by it (they know their own ID),
+        // but cannot read it out of other documents — preventing IDOR leakage.
+        if (req.user?.role !== 'admin') {
+          doc.reporterUniqueId = undefined
+        }
         return doc
       },
     ],
@@ -469,9 +482,6 @@ export const Signals: CollectionConfig = {
       label: 'Анонимен идентификатор на подателя',
       type: 'text',
       index: true,
-      access: {
-        read: isAdmin,
-      },
       admin: {
         description: 'Уникален анонимен идентификатор на подателя (за обратна връзка)',
         position: 'sidebar',

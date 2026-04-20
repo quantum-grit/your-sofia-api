@@ -469,6 +469,9 @@ export const Signals: CollectionConfig = {
       label: 'Анонимен идентификатор на подателя',
       type: 'text',
       index: true,
+      access: {
+        read: isAdmin,
+      },
       admin: {
         description: 'Уникален анонимен идентификатор на подателя (за обратна връзка)',
         position: 'sidebar',

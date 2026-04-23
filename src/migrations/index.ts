@@ -37,6 +37,7 @@ import * as migration_20260408_000000_import_containers_poduyane from './2026040
 import * as migration_20260419_000000_fix_observation_fk_cascade from './20260419_000000_fix_observation_fk_cascade';
 import * as migration_20260419_000001_seed_categories from './20260419_000001_seed_categories';
 import * as migration_20260420_171859_add_reporterUniqueId_to_push_tokens from './20260420_171859_add_reporterUniqueId_to_push_tokens';
+import * as migration_20260423_172832_notification_toggle from './20260423_172832_notification_toggle';
 
 export const migrations = [
   {
@@ -232,6 +233,11 @@ export const migrations = [
   {
     up: migration_20260420_171859_add_reporterUniqueId_to_push_tokens.up,
     down: migration_20260420_171859_add_reporterUniqueId_to_push_tokens.down,
-    name: '20260420_171859_add_reporterUniqueId_to_push_tokens'
+    name: '20260420_171859_add_reporterUniqueId_to_push_tokens',
+  },
+  {
+    up: migration_20260423_172832_notification_toggle.up,
+    down: migration_20260423_172832_notification_toggle.down,
+    name: '20260423_172832_notification_toggle'
   },
 ];

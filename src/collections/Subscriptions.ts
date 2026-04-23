@@ -33,6 +33,14 @@ export const Subscriptions: CollectionConfig = {
   },
   fields: [
     {
+      name: 'enabled',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'Whether the device has notifications enabled. Toggled by the user in-app.',
+      },
+    },
+    {
       name: 'pushToken',
       type: 'relationship',
       relationTo: 'push-tokens',

@@ -1192,6 +1192,10 @@ export interface GeocodeAddress {
 export interface Subscription {
   id: number;
   /**
+   * Whether the device has notifications enabled. Toggled by the user in-app.
+   */
+  enabled?: boolean | null;
+  /**
    * The Expo push token that owns this subscription
    */
   pushToken: number | PushToken;
@@ -2120,6 +2124,7 @@ export interface GeocodeAddressesSelect<T extends boolean = true> {
  * via the `definition` "subscriptions_select".
  */
 export interface SubscriptionsSelect<T extends boolean = true> {
+  enabled?: T;
   pushToken?: T;
   user?: T;
   categories?: T;

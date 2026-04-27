@@ -4,6 +4,21 @@
 
 **Do not generate summaries of completed work.** The user can see changes in the diff/file changes. Only provide summaries if explicitly requested.
 
+## Design System
+
+**Always read `DESIGN.md` before making any visual or UI decisions.**
+All font choices, colors, spacing, and aesthetic direction are defined there.
+Do not deviate without explicit user approval.
+In QA mode, flag any code that doesn't match `DESIGN.md`.
+
+**Quick reference:**
+
+- Primary: `#2F54C5` · Primary dark: `#082E8E` · Primary light: `#5078F0`
+- Gold accent: `#E0B340` · Gold light bg: `#FEF3C0`
+- Typography: Sofia Sans (all UI) + JetBrains Mono (numbers/data)
+- Spacing: 8px base, 16px page margins
+- Border radius: 6px tags → 10px buttons/inputs → 12px cards → 9999px pills
+
 ## Repository Skills
 
 This repository contains curated skill documents in `.agents/skills/` that provide domain-specific expertise. Before implementing solutions, consult the appropriate skill documentation for recommended patterns and best practices.

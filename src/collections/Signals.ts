@@ -305,15 +305,33 @@ export const Signals: CollectionConfig = {
         return doc
       },
       async ({ doc, req, previousDoc, operation }) => {
-        // Only notify when a signal transitions to a closed status
+        // Notify citizen on any meaningful status transition: in-progress, resolved, rejected
         if (operation === 'create') return doc
 
-        const closedStatuses = ['resolved', 'rejected']
-        const statusChanged = previousDoc?.status !== doc.status
-        const isClosed = closedStatuses.includes(doc.status)
+        const notifyStatuses = ['in-progress', 'resolved', 'rejected'] as const
+        type NotifyStatus = (typeof notifyStatuses)[number]
 
-        if (statusChanged && isClosed && doc.reporterUniqueId) {
-          const statusLabel = doc.status === 'resolved' ? 'разрешен' : 'отхвърлен'
+        const statusChanged = previousDoc?.status !== doc.status
+        const shouldNotify = notifyStatuses.includes(doc.status as NotifyStatus)
+
+        if (statusChanged && shouldNotify && doc.reporterUniqueId) {
+          const notifContent: Record<NotifyStatus, { title: string; body: string }> = {
+            'in-progress': {
+              title: 'Сигналът ви е в изпълнение',
+              body: `Сигнал #${doc.id} е взет за изпълнение от отговорния район.`,
+            },
+            resolved: {
+              title: 'Сигналът ви е приключен',
+              body: `Сигнал #${doc.id} е приключен. Благодарим за вашия принос!`,
+            },
+            rejected: {
+              title: 'Сигналът ви е отхвърлен',
+              body: `Сигнал #${doc.id} не може да бъде изпълнен в момента.`,
+            },
+          }
+
+          const content = notifContent[doc.status as NotifyStatus]
+
           try {
             const tokenResult = await req.payload.find({
               collection: 'push-tokens',
@@ -335,17 +353,21 @@ export const Signals: CollectionConfig = {
               )
             } else {
               await sendPushNotificationsToTokens(req.payload, tokenStrings, {
-                title: 'Сигналът ви беше затворен',
-                body: `Вашият сигнал "${doc.title}" беше ${statusLabel}.`,
-                data: { type: 'signal-closed', signalId: String(doc.id), status: doc.status },
+                title: content.title,
+                body: content.body,
+                data: {
+                  type: 'signal-status-update',
+                  signalId: String(doc.id),
+                  status: doc.status,
+                },
               })
               req.payload.logger.info(
-                `[Signals] Sent signal-closed notification for signal ${doc.id} to ${tokenStrings.length} token(s)`
+                `[Signals] Sent signal-status-update (${doc.status}) notification for signal ${doc.id} to ${tokenStrings.length} token(s)`
               )
             }
           } catch (err) {
             req.payload.logger.error(
-              `[Signals] Failed to send signal-closed notification for signal ${doc.id}: ${err}`
+              `[Signals] Failed to send signal-status-update notification for signal ${doc.id}: ${err}`
             )
           }
         }

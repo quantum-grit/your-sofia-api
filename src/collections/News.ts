@@ -14,8 +14,8 @@ export const News: CollectionConfig = {
     // Only admin role can access the admin panel
     admin: isAdmin,
     // Anyone can read published news
-    read: ({ req: { user } }) => {
-      if (user) return true // Admins can see all
+    read: ({ req }) => {
+      if (isAdmin({ req })) return true // Admins can see all (including drafts)
       return {
         status: {
           equals: 'published',
@@ -23,9 +23,9 @@ export const News: CollectionConfig = {
       }
     },
     // Only admins can create/update/delete
-    create: ({ req: { user } }) => Boolean(user),
-    update: ({ req: { user } }) => Boolean(user),
-    delete: ({ req: { user } }) => Boolean(user),
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin,
   },
   fields: [
     {
@@ -48,26 +48,17 @@ export const News: CollectionConfig = {
     {
       name: 'topic',
       type: 'select',
-      required: true,
+      required: false,
       options: [
-        {
-          label: 'Festivals',
-          value: 'festivals',
-        },
-        {
-          label: 'Street Closure',
-          value: 'street-closure',
-        },
-        {
-          label: 'City Events',
-          value: 'city-events',
-        },
         {
           label: 'Alerts',
           value: 'alerts',
         },
+        {
+          label: 'Release Notes',
+          value: 'release-notes',
+        },
       ],
-      defaultValue: 'city-events',
     },
     {
       name: 'image',

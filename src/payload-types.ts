@@ -201,7 +201,7 @@ export interface News {
     };
     [k: string]: unknown;
   } | null;
-  topic: 'festivals' | 'street-closure' | 'city-events' | 'alerts';
+  topic?: ('alerts' | 'release-notes') | null;
   image?: (number | null) | Media;
   location?: {
     latitude?: number | null;

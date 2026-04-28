@@ -270,10 +270,10 @@ describe('Signals afterChange hook — signal-closed notification', () => {
       payload,
       ['ExponentPushToken[abc]'],
       expect.objectContaining({
-        title: 'Сигналът ви беше затворен',
-        body: expect.stringContaining('разрешен'),
+        title: 'Сигналът ви е приключен',
+        body: expect.stringContaining('Благодарим за вашия принос'),
         data: expect.objectContaining({
-          type: 'signal-closed',
+          type: 'signal-status-update',
           signalId: '42',
           status: 'resolved',
         }),
@@ -297,8 +297,13 @@ describe('Signals afterChange hook — signal-closed notification', () => {
       payload,
       ['ExponentPushToken[xyz]'],
       expect.objectContaining({
-        body: expect.stringContaining('отхвърлен'),
-        data: expect.objectContaining({ status: 'rejected' }),
+        title: 'Сигналът ви е отхвърлен',
+        body: expect.stringContaining('не може да бъде изпълнен'),
+        data: expect.objectContaining({
+          type: 'signal-status-update',
+          signalId: '7',
+          status: 'rejected',
+        }),
       })
     )
   })
@@ -318,7 +323,7 @@ describe('Signals afterChange hook — signal-closed notification', () => {
       })
     ).resolves.toBe(doc)
     expect(payload.logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to send signal-closed notification')
+      expect.stringContaining('Failed to send signal-status-update notification')
     )
   })
 

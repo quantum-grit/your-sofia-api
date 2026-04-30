@@ -108,7 +108,7 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
 
       const result = await payload.db.drizzle.execute(nearestQuery)
       let containerId = result?.rows?.[0]?.id as number | undefined
-      const districtExists = result?.rows?.[0]?.district as number | undefined
+      const districtExists = result?.rows?.[0]?.district_id
 
       if (!containerId) {
         //insert container on the missing spot and mark it prending for approval
@@ -142,7 +142,9 @@ const handler: TaskHandler<'processWasteCollectionEvents'> = async ({ input, req
               state: [],
               lastCleaned: parseGpsTime(spot.events[0].GpsTime).toISOString(),
               servicedBy: `FirmId: ${firmId}`,
-              district: !districtExists ? spot.latestEvent.Region : undefined, //update district only if it was missing before
+              district: !districtExists
+                ? (districtIdByRegion.get(spot.latestEvent.Region) ?? undefined)
+                : undefined, //update district only if it was missing before
             },
             overrideAccess: true,
             context: { skipGpsSyncHooks: true },

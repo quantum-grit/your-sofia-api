@@ -43,6 +43,7 @@ export const collectionMetrics: Endpoint = {
           AND wco.cleaned_at  >= ${fromIso}::timestamptz
           AND wco.cleaned_at  <= ${toIso}::timestamptz
         WHERE wc.district_id IS NOT NULL
+          AND cd.code = 'RTR' AND wc.capacity_volume = 1.1
         GROUP BY cd.district_id, cd.name
         ORDER BY cd.district_id
       `
@@ -80,6 +81,7 @@ export const collectionMetrics: Endpoint = {
           ON  wco.container_id = wc.id
           AND wco.cleaned_at  >= ${fromIso}::timestamptz
           AND wco.cleaned_at  <= ${toIso}::timestamptz
+        WHERE cd.code = 'RTR' AND wc.capacity_volume = 1.1
         GROUP BY wcz.id, wcz.number, wcz.name, wcz.service_company_id
         ORDER BY wcz.number
       `
@@ -110,6 +112,8 @@ export const collectionMetrics: Endpoint = {
             wc.id AS container_id,
             MAX(wc.last_cleaned) AS last_cleaned_at
           FROM waste_containers wc
+          LEFT JOIN city_districts cd ON cd.id = wc.district_id
+          WHERE cd.code = 'RTR' AND wc.capacity_volume = 1.1
           GROUP BY wc.id
         )
         SELECT
@@ -164,7 +168,10 @@ export const collectionMetrics: Endpoint = {
           )::int AS missed
         FROM waste_containers wc
         LEFT JOIN waste_containers_collection_days_of_week wcdow ON wcdow.parent_id = wc.id
+        LEFT JOIN city_districts cd ON cd.id = wc.district_id
         WHERE wc.status = 'active'
+          AND cd.code = 'RTR' AND wc.capacity_volume = 1.1
+
       `
 
       const complianceResult = await payload.db.drizzle.execute(complianceQuery)

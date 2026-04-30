@@ -52,11 +52,18 @@ export default buildConfig({
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below and the import `BeforeDashboard` statement on line 15.
       beforeDashboard: ['@/components/BeforeDashboard'],
-      beforeNavLinks: ['@/components/MetricsDashboard/NavLink'],
+      beforeNavLinks: [
+        '@/components/MetricsDashboard/NavLink',
+        '@/components/WasteContainerMap/NavLink',
+      ],
       views: {
         metricsView: {
           Component: '@/components/MetricsDashboard/index',
           path: '/metrics',
+        },
+        wasteMapView: {
+          Component: '@/components/WasteContainerMap/index',
+          path: '/waste-map',
         },
       },
     },
@@ -132,6 +139,14 @@ export default buildConfig({
       bg: {
         authentication: {
           login: 'Влез',
+        },
+        'plugin-redirects': {
+          customUrl: 'Собствен URL',
+          documentToRedirect: 'Документ за пренасочване',
+          fromUrl: 'От URL',
+          internalLink: 'Вътрешна връзка',
+          redirectType: 'Тип пренасочване',
+          toUrlType: 'Тип на целевия URL',
         },
       },
     },

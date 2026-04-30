@@ -2,7 +2,7 @@
 
 import { useAuth, useForm, useFormFields } from '@payloadcms/ui'
 import dynamic from 'next/dynamic'
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import './index.scss'
 
 // Dynamically import the Leaflet map to avoid SSR issues (Leaflet requires `window`)
@@ -37,6 +37,7 @@ export function LocationMapComponent() {
   const { user } = useAuth()
   const { dispatchFields } = useForm()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const prefillApplied = useRef(false)
 
   const canEdit = user != null && (user.role === 'admin' || user.role === 'containerAdmin')
 
@@ -48,6 +49,30 @@ export function LocationMapComponent() {
 
   const lng = Array.isArray(locationValue) ? locationValue[0] : null
   const lat = Array.isArray(locationValue) ? locationValue[1] : null
+
+  // Apply sessionStorage prefill from the waste container map "create here" flow
+  useEffect(() => {
+    if (prefillApplied.current || !canEdit) return
+    try {
+      const raw = sessionStorage.getItem('prefill_waste_container_location')
+      if (!raw) return
+      sessionStorage.removeItem('prefill_waste_container_location')
+      const { lat: prefillLat, lng: prefillLng } = JSON.parse(raw) as { lat: number; lng: number }
+      if (typeof prefillLat !== 'number' || typeof prefillLng !== 'number') return
+      prefillApplied.current = true
+      dispatchFields({ type: 'UPDATE', path: 'location', value: [prefillLng, prefillLat] })
+      // Also trigger reverse geocoding
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(async () => {
+        const address = await reverseGeocode(prefillLat, prefillLng)
+        if (address) {
+          dispatchFields({ type: 'UPDATE', path: 'address', value: address })
+        }
+      }, 600)
+    } catch {
+      // sessionStorage not available or invalid JSON — ignore
+    }
+  }, [canEdit, dispatchFields])
 
   const handlePositionChange = useCallback(
     (newLat: number, newLng: number) => {

@@ -3,6 +3,7 @@ import { cleanContainer } from '../endpoints/cleanContainer'
 import { nearbyContainers } from '../endpoints/nearbyContainers'
 import { containersWithSignalCount } from '@/endpoints/containers-with-signals'
 import { collectionMetrics } from '@/endpoints/collection-metrics'
+import { bulkUpdateContainerStatus } from '@/endpoints/bulkUpdateContainerStatus'
 import { locationMapField } from '@/fields/locationMap'
 import {
   canViewCityInfrastructure,
@@ -26,7 +27,13 @@ export const WasteContainers: CollectionConfig = {
     description: 'Управление на контейнерите за отпадъци в града',
     listSearchableFields: ['publicNumber', 'legacyId'],
   },
-  endpoints: [cleanContainer, nearbyContainers, containersWithSignalCount, collectionMetrics],
+  endpoints: [
+    cleanContainer,
+    nearbyContainers,
+    containersWithSignalCount,
+    collectionMetrics,
+    bulkUpdateContainerStatus,
+  ],
   access: {
     admin: canViewCityInfrastructure,
     read: () => true,

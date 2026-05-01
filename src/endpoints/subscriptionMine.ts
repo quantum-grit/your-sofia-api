@@ -77,9 +77,9 @@ export const subscriptionMinePatch: Endpoint = {
 
       if (tokenResult.totalDocs === 0 || !tokenResult.docs[0]) {
         req.payload.logger.warn(
-          `[subscriptionMine PATCH] push token not found in DB: ${tokenString.slice(0, 20)}…`
+          `[subscriptionMine PATCH] push token not found in DB: ${tokenString}`
         )
-        return Response.json({ error: 'Push token not found' }, { status: 404 })
+        return Response.json({ error: 'Push token not found: ' + tokenString }, { status: 404 })
       }
 
       const pushTokenDoc = tokenResult.docs[0]

@@ -139,6 +139,6 @@ export const sendUpdatesNotifications: TaskConfig<'sendUpdatesNotifications'> = 
   label: 'Send push notifications for new city updates',
   retries: 0,
   outputSchema: [{ name: 'notified', type: 'number', required: true }],
-  schedule: [{ cron: '*/15 * * * *' }],
+  schedule: [{ cron: '*/15 * * * *', queue: 'default' }], // Every 5 minutes
   handler,
 }

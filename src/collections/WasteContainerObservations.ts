@@ -1,5 +1,8 @@
 import type { CollectionConfig } from 'payload'
-import { canViewCityInfrastructure } from '@/access/cityInfrastructureAdmin'
+import {
+  canViewCityInfrastructure,
+  cityInfrastructureAdmin,
+} from '@/access/cityInfrastructureAdmin'
 import { isAdmin } from '@/access/isAdmin'
 
 export const WasteContainerObservations: CollectionConfig = {
@@ -10,7 +13,7 @@ export const WasteContainerObservations: CollectionConfig = {
   },
   access: {
     admin: canViewCityInfrastructure,
-    create: ({ req: { user } }) => !!user,
+    create: cityInfrastructureAdmin,
     read: () => true,
     update: isAdmin,
     delete: isAdmin,

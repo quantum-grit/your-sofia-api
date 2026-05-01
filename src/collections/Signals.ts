@@ -175,6 +175,47 @@ export const Signals: CollectionConfig = {
           }
         }
 
+        // Daily rate limit: max 10 signals per reporterUniqueId per calendar day (admins exempt)
+        if (data.reporterUniqueId && req.user?.role !== 'admin') {
+          try {
+            const startOfDay = new Date()
+            startOfDay.setHours(0, 0, 0, 0)
+
+            const todayCount = await req.payload.find({
+              collection: 'signals',
+              overrideAccess: true,
+              where: {
+                and: [
+                  {
+                    reporterUniqueId: {
+                      equals: data.reporterUniqueId,
+                    },
+                  },
+                  {
+                    createdAt: {
+                      greater_than_equal: startOfDay.toISOString(),
+                    },
+                  },
+                ],
+              },
+              limit: 0, // count only
+            })
+
+            if (todayCount.totalDocs >= 10) {
+              req.payload.logger.warn(
+                `Daily limit reached: Reporter ${data.reporterUniqueId} has ${todayCount.totalDocs} signals today`
+              )
+              throw new APIError(
+                `Daily signal limit reached. You can submit up to 10 signals per day.`,
+                429
+              )
+            }
+          } catch (error) {
+            if (error instanceof APIError) throw error
+            req.payload.logger.error(`Error checking daily signal limit: ${error}`)
+          }
+        }
+
         // Check for duplicate waste container signals
         if (
           data.category === 'waste-container' &&
@@ -390,7 +431,12 @@ export const Signals: CollectionConfig = {
   access: {
     admin: canViewCityInfrastructure,
     read: () => true,
-    create: () => true,
+    create: ({ req: { user }, data }) => {
+      // Authenticated users can always create
+      if (user) return true
+      // Anonymous submissions require a reporterUniqueId
+      return !!(data as Record<string, unknown> | undefined)?.reporterUniqueId
+    },
     update: canUpdate,
     delete: isAdmin,
   },

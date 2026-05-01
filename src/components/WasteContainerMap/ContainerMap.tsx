@@ -4,6 +4,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { colors } from '@/cssVariables'
 import { Bounds, ClusterPoint, ContainerWithSignals, MapItem, getMarkerColor } from './types'
 
 // Fix Leaflet's broken default marker icons when bundled with webpack/Next.js
@@ -19,7 +20,7 @@ const SOFIA_LNG = 23.3219
 
 function createColorIcon(color: string, selected: boolean): L.DivIcon {
   const size = selected ? 18 : 14
-  const border = selected ? '3px solid #1E40AF' : '2px solid rgba(0,0,0,0.3)'
+  const border = selected ? `3px solid ${colors.primaryDark}` : '2px solid rgba(0,0,0,0.3)'
   return L.divIcon({
     className: '',
     html: `<div style="
@@ -38,12 +39,12 @@ function createClusterIcon(cluster: ClusterPoint): L.DivIcon {
   const { count, dominantStatus, activeSignalCount } = cluster
   const color =
     dominantStatus === 'inactive' || dominantStatus === 'pending'
-      ? '#9CA3AF'
+      ? colors.textMuted
       : activeSignalCount > 0
-        ? '#F97316'
+        ? colors.warning
         : dominantStatus === 'full' || dominantStatus === 'maintenance'
-          ? '#EF4444'
-          : '#22C55E'
+          ? colors.error
+          : colors.success
   const size = count >= 1000 ? 52 : count >= 100 ? 44 : count >= 10 ? 36 : 28
   const label = count >= 1000 ? `${Math.floor(count / 1000)}k+` : String(count)
   return L.divIcon({

@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@payloadcms/ui'
+import { colors } from '@/cssVariables'
 import { ContainerWithSignals } from './types'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -14,11 +15,11 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  active: '#22C55E',
-  full: '#EF4444',
-  maintenance: '#F97316',
-  inactive: '#9CA3AF',
-  pending: '#6B7280',
+  active: colors.success,
+  full: colors.error,
+  maintenance: colors.warning,
+  inactive: colors.textMuted,
+  pending: colors.textSecondary,
 }
 
 const WASTE_TYPE_LABELS: Record<string, string> = {
@@ -94,12 +95,12 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
         top: 16,
         right: 16,
         width: 320,
-        background: '#fff',
+        background: colors.surface,
         borderRadius: 10,
         boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
         zIndex: 1000,
         overflow: 'hidden',
-        border: '1px solid #E5E7EB',
+        border: `1px solid ${colors.border}`,
       }}
     >
       {/* Header */}
@@ -109,11 +110,11 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
           alignItems: 'flex-start',
           justifyContent: 'space-between',
           padding: '14px 16px 10px',
-          borderBottom: '1px solid #F3F4F6',
+          borderBottom: `1px solid ${colors.surface2}`,
         }}
       >
         <div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#111827' }}>
+          <div style={{ fontWeight: 700, fontSize: 16, color: colors.textPrimary }}>
             {container.publicNumber}
           </div>
           <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
@@ -135,8 +136,8 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
                 fontSize: 11,
                 padding: '2px 8px',
                 borderRadius: 999,
-                background: '#F3F4F6',
-                color: '#6B7280',
+                background: colors.surface2,
+                color: colors.textSecondary,
               }}
             >
               {WASTE_TYPE_LABELS[container.wasteType] ?? container.wasteType}
@@ -149,7 +150,7 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            color: '#9CA3AF',
+            color: colors.textMuted,
             fontSize: 20,
             lineHeight: 1,
             padding: 0,
@@ -162,10 +163,10 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
       </div>
 
       {/* Body */}
-      <div style={{ padding: '12px 16px', fontSize: 13, color: '#374151' }}>
+      <div style={{ padding: '12px 16px', fontSize: 13, color: colors.textSecondary }}>
         {/* Capacity */}
         <div style={{ marginBottom: 6 }}>
-          <span style={{ color: '#9CA3AF' }}>Размер: </span>
+          <span style={{ color: colors.textMuted }}>Размер: </span>
           {CAPACITY_LABELS[container.capacitySize] ?? container.capacitySize}
           {container.capacityVolume != null && ` · ${container.capacityVolume} m³`}
         </div>
@@ -173,7 +174,7 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
         {/* Address */}
         {container.address && (
           <div style={{ marginBottom: 6 }}>
-            <span style={{ color: '#9CA3AF' }}>Адрес: </span>
+            <span style={{ color: colors.textMuted }}>Адрес: </span>
             {container.address}
           </div>
         )}
@@ -181,7 +182,7 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
         {/* Serviced by */}
         {container.servicedBy && (
           <div style={{ marginBottom: 6 }}>
-            <span style={{ color: '#9CA3AF' }}>Обслужва: </span>
+            <span style={{ color: colors.textMuted }}>Обслужва: </span>
             {container.servicedBy}
           </div>
         )}
@@ -193,8 +194,8 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
             marginBottom: 10,
             padding: '8px 10px',
             borderRadius: 8,
-            background: container.activeSignalCount > 0 ? '#FEF3C7' : '#F0FDF4',
-            border: `1px solid ${container.activeSignalCount > 0 ? '#FDE68A' : '#BBF7D0'}`,
+            background: container.activeSignalCount > 0 ? colors.warningLight : colors.successLight,
+            border: `1px solid ${container.activeSignalCount > 0 ? colors.warning + '66' : colors.success + '66'}`,
           }}
         >
           <span style={{ fontWeight: 600 }}>
@@ -204,7 +205,7 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
 
         {/* Last cleaned */}
         {container.lastCleaned && (
-          <div style={{ marginBottom: 8, color: '#6B7280', fontSize: 12 }}>
+          <div style={{ marginBottom: 8, color: colors.textSecondary, fontSize: 12 }}>
             Последно почистен: {new Date(container.lastCleaned).toLocaleString('bg-BG')}
           </div>
         )}
@@ -217,7 +218,7 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
           display: 'flex',
           flexDirection: 'column',
           gap: 6,
-          borderTop: '1px solid #F3F4F6',
+          borderTop: `1px solid ${colors.surface2}`,
         }}
       >
         <div style={{ display: 'flex', gap: 6 }}>
@@ -227,8 +228,8 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
               flex: 1,
               padding: '7px 12px',
               borderRadius: 6,
-              background: '#1E40AF',
-              color: '#fff',
+              background: colors.primaryDark,
+              color: colors.surface,
               fontSize: 13,
               fontWeight: 500,
               textDecoration: 'none',
@@ -243,8 +244,8 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
               flex: 1,
               padding: '7px 12px',
               borderRadius: 6,
-              background: '#F3F4F6',
-              color: '#374151',
+              background: colors.surface2,
+              color: colors.textSecondary,
               fontSize: 13,
               fontWeight: 500,
               textDecoration: 'none',
@@ -262,8 +263,8 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
               width: '100%',
               padding: '7px 12px',
               borderRadius: 6,
-              background: '#065F46',
-              color: '#fff',
+              background: colors.success,
+              color: colors.surface,
               fontSize: 13,
               fontWeight: 500,
               border: 'none',
@@ -284,14 +285,14 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
               style={{
                 padding: '6px 8px',
                 borderRadius: 6,
-                border: '1px solid #D1D5DB',
+                border: `1px solid ${colors.border}`,
                 fontSize: 13,
                 resize: 'none',
                 fontFamily: 'inherit',
               }}
             />
             {cleanError && (
-              <p style={{ color: '#DC2626', fontSize: 12, margin: 0 }}>{cleanError}</p>
+              <p style={{ color: colors.error, fontSize: 12, margin: 0 }}>{cleanError}</p>
             )}
             <div style={{ display: 'flex', gap: 6 }}>
               <button
@@ -301,8 +302,8 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
                   flex: 1,
                   padding: '7px 12px',
                   borderRadius: 6,
-                  background: cleanLoading ? '#9CA3AF' : '#065F46',
-                  color: '#fff',
+                  background: cleanLoading ? colors.textMuted : colors.success,
+                  color: colors.surface,
                   fontSize: 13,
                   border: 'none',
                   cursor: cleanLoading ? 'default' : 'pointer',
@@ -319,8 +320,8 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
                 style={{
                   padding: '7px 12px',
                   borderRadius: 6,
-                  background: '#F3F4F6',
-                  color: '#374151',
+                  background: colors.surface2,
+                  color: colors.textSecondary,
                   fontSize: 13,
                   border: 'none',
                   cursor: 'pointer',

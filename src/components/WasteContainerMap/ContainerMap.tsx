@@ -19,19 +19,59 @@ const SOFIA_LAT = 42.6977
 const SOFIA_LNG = 23.3219
 
 function createColorIcon(color: string, selected: boolean): L.DivIcon {
-  const size = selected ? 18 : 14
-  const border = selected ? `3px solid ${colors.primaryDark}` : '2px solid rgba(0,0,0,0.3)'
+  const headSize = selected ? 36 : 28
+  const pointSize = selected ? 16 : 12
+  const width = headSize + 8
+  const height = headSize + pointSize + 10
+  const borderWidth = selected ? 3 : 2
+  const borderColor = selected ? colors.primaryDark : 'rgba(0,0,0,0.3)'
+  const iconSize = selected ? 18 : 14
   return L.divIcon({
     className: '',
     html: `<div style="
-      width:${size}px;height:${size}px;
-      border-radius:50%;
-      background:${color};
-      border:${border};
-      box-shadow:0 1px 3px rgba(0,0,0,0.4);
-    "></div>`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+      position:relative;
+      width:${width}px;
+      height:${height}px;
+    ">
+      <div style="
+        position:absolute;
+        left:50%;
+        top:0;
+        width:${headSize}px;
+        height:${headSize}px;
+        transform:translateX(-50%);
+        border-radius:999px;
+        background:${color};
+        border:${borderWidth}px solid ${borderColor};
+        box-shadow:0 2px 6px rgba(0,0,0,0.35);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:#fff;
+      ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z"/>
+          <path d="M10 21.9V14L2.1 9.1"/>
+          <path d="m10 14 11.9-6.9"/>
+          <path d="M14 19.8v-8.1"/>
+          <path d="M18 17.5V9.4"/>
+        </svg>
+      </div>
+      <div style="
+        position:absolute;
+        left:50%;
+        top:${headSize - 8}px;
+        width:${pointSize}px;
+        height:${pointSize}px;
+        transform:translateX(-50%) rotate(45deg);
+        background:${color};
+        border-right:${borderWidth}px solid ${borderColor};
+        border-bottom:${borderWidth}px solid ${borderColor};
+        box-shadow:2px 2px 4px rgba(0,0,0,0.18);
+      "></div>
+    </div>`,
+    iconSize: [width, height],
+    iconAnchor: [width / 2, height],
   })
 }
 

@@ -45,9 +45,15 @@ interface ContainerPopupProps {
   container: ContainerWithSignals
   onClose: () => void
   onContainerUpdated: (updated: ContainerWithSignals) => void
+  onBeforeEdit?: () => void
 }
 
-export function ContainerPopup({ container, onClose, onContainerUpdated }: ContainerPopupProps) {
+export function ContainerPopup({
+  container,
+  onClose,
+  onContainerUpdated,
+  onBeforeEdit,
+}: ContainerPopupProps) {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin' || user?.role === 'containerAdmin'
 
@@ -94,7 +100,7 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
         position: 'absolute',
         top: 16,
         right: 16,
-        width: 320,
+        width: 350,
         background: colors.surface,
         borderRadius: 10,
         boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
@@ -163,39 +169,13 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
       </div>
 
       {/* Body */}
-      <div style={{ padding: '12px 16px', fontSize: 13, color: colors.textSecondary }}>
-        {/* Capacity */}
-        <div style={{ marginBottom: 6 }}>
-          <span style={{ color: colors.textMuted }}>Размер: </span>
-          {CAPACITY_LABELS[container.capacitySize] ?? container.capacitySize}
-          {container.capacityVolume != null && ` · ${container.capacityVolume} m³`}
-        </div>
-
-        {/* Address */}
-        {container.address && (
-          <div style={{ marginBottom: 6 }}>
-            <span style={{ color: colors.textMuted }}>Адрес: </span>
-            {container.address}
-          </div>
-        )}
-
-        {/* Serviced by */}
-        {container.servicedBy && (
-          <div style={{ marginBottom: 6 }}>
-            <span style={{ color: colors.textMuted }}>Обслужва: </span>
-            {container.servicedBy}
-          </div>
-        )}
-
+      <div style={{ padding: '12px 12px', fontSize: 13, color: colors.textSecondary }}>
         {/* Signals */}
         <div
           style={{
-            marginTop: 10,
-            marginBottom: 10,
+            marginTop: 2,
+            marginBottom: 2,
             padding: '8px 10px',
-            borderRadius: 8,
-            background: container.activeSignalCount > 0 ? colors.warningLight : colors.successLight,
-            border: `1px solid ${container.activeSignalCount > 0 ? colors.warning + '66' : colors.success + '66'}`,
           }}
         >
           <span style={{ fontWeight: 600 }}>
@@ -203,12 +183,97 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
           </span>
         </div>
 
-        {/* Last cleaned */}
-        {container.lastCleaned && (
-          <div style={{ marginBottom: 8, color: colors.textSecondary, fontSize: 12 }}>
-            Последно почистен: {new Date(container.lastCleaned).toLocaleString('bg-BG')}
+        <div
+          style={{
+            marginTop: 8,
+            padding: '10px',
+            borderRadius: 8,
+            background: colors.surface2,
+            border: `1px solid ${colors.border}`,
+            display: 'grid',
+            gap: 5,
+            fontSize: 12,
+          }}
+        >
+          <div>
+            <span style={{ color: colors.textMuted }}>ID: </span>
+            {container.id}
           </div>
-        )}
+          <div>
+            <span style={{ color: colors.textMuted }}>Статус: </span>
+            {STATUS_LABELS[container.status] ?? container.status}
+          </div>
+          <div>
+            <span style={{ color: colors.textMuted }}>Вид отпадък: </span>
+            {WASTE_TYPE_LABELS[container.wasteType] ?? container.wasteType}
+          </div>
+          <div>
+            <span style={{ color: colors.textMuted }}>Размер: </span>
+            {CAPACITY_LABELS[container.capacitySize] ?? container.capacitySize}
+          </div>
+          <div>
+            <span style={{ color: colors.textMuted }}>Обем: </span>
+            {container.capacityVolume} m³
+          </div>
+          {container.address && (
+            <div>
+              <span style={{ color: colors.textMuted }}>Адрес: </span>
+              {container.address}
+            </div>
+          )}
+          {container.servicedBy && (
+            <div>
+              <span style={{ color: colors.textMuted }}>Обслужва: </span>
+              {container.servicedBy}
+            </div>
+          )}
+          <div>
+            <span style={{ color: colors.textMuted }}>Последно почистен: </span>
+            {container.lastCleaned && new Date(container.lastCleaned).toLocaleString('bg-BG')}
+          </div>
+          {container.legacyId && (
+            <div>
+              <span style={{ color: colors.textMuted }}>Legacy ID: </span>
+              {container.legacyId}
+            </div>
+          )}
+          {container.imageId != null && (
+            <div>
+              <span style={{ color: colors.textMuted }}>Снимка ID: </span>
+              {container.imageId}
+            </div>
+          )}
+          <div>
+            <span style={{ color: colors.textMuted }}>Координати: </span>
+            {container.location[1].toFixed(6)}, {container.location[0].toFixed(6)}
+          </div>
+          {container.binCount != null && (
+            <div>
+              <span style={{ color: colors.textMuted }}>Брой съдове: </span>
+              {container.binCount}
+            </div>
+          )}
+          {container.districtId != null && (
+            <div>
+              <span style={{ color: colors.textMuted }}>Район ID: </span>
+              {container.districtId}
+            </div>
+          )}
+          {container.notes && (
+            <div>
+              <span style={{ color: colors.textMuted }}>Бележки: </span>
+              {container.notes}
+            </div>
+          )}
+          <div>
+            <span style={{ color: colors.textMuted }}>Създаден: </span>
+            {new Date(container.createdAt).toLocaleString('bg-BG')}
+          </div>
+          <div>
+            <span style={{ color: colors.textMuted }}>Обновен: </span>
+            {new Date(container.updatedAt).toLocaleString('bg-BG')}
+          </div>
+        </div>
       </div>
 
       {/* Actions */}
@@ -224,6 +289,7 @@ export function ContainerPopup({ container, onClose, onContainerUpdated }: Conta
         <div style={{ display: 'flex', gap: 6 }}>
           <Link
             href={`/admin/collections/waste-containers/${container.id}`}
+            onClick={onBeforeEdit}
             style={{
               flex: 1,
               padding: '7px 12px',

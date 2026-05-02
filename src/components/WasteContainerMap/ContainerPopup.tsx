@@ -670,7 +670,7 @@ export function ContainerPopup({
           }}
         >
           <Link
-            href={`/admin/collections/signals?where[cityObjectReferenceId][equals]=${encodeURIComponent(container.publicNumber)}`}
+            href={`/admin/collections/signals?where[cityObject.referenceId][equals]=${encodeURIComponent(container.publicNumber)}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ fontWeight: 600, color: colors.primaryDark, textDecoration: 'none' }}

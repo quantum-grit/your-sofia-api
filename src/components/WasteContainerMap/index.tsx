@@ -49,12 +49,80 @@ const WasteContainerMapView: React.FC = () => {
   const [items, setItems] = useState<MapItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [addressQuery, setAddressQuery] = useState('')
+  const [addressLoading, setAddressLoading] = useState(false)
+  const [addressError, setAddressError] = useState<string | null>(null)
+  const [flyToTarget, setFlyToTarget] = useState<[number, number] | null>(null)
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS)
   const [selectedContainer, setSelectedContainer] = useState<ContainerWithSignals | null>(null)
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [newPin, setNewPin] = useState<NewPinLocation | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Restore map position + selection after browser back from the edit page
+  const [{ initialCenter, initialZoom, restoreId }] = useState<{
+    initialCenter: [number, number]
+    initialZoom: number
+    restoreId: number | null
+  }>(() => {
+    const defaults = {
+      initialCenter: [42.6977, 23.3219] as [number, number],
+      initialZoom: 12,
+      restoreId: null,
+    }
+    if (typeof window === 'undefined') return defaults
+    try {
+      const raw = sessionStorage.getItem('wcmap_state')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        return {
+          initialCenter: Array.isArray(parsed.center)
+            ? (parsed.center as [number, number])
+            : defaults.initialCenter,
+          initialZoom: typeof parsed.zoom === 'number' ? parsed.zoom : defaults.initialZoom,
+          restoreId: typeof parsed.containerId === 'number' ? parsed.containerId : null,
+        }
+      }
+    } catch {}
+    return defaults
+  })
+
+  const restoreContainerIdRef = useRef<number | null>(restoreId)
+  const currentPositionRef = useRef<{ center: [number, number]; zoom: number }>({
+    center: initialCenter,
+    zoom: initialZoom,
+  })
+
+  // Once items arrive, check if we need to restore a selected container
+  useEffect(() => {
+    if (restoreContainerIdRef.current === null) return
+    const id = restoreContainerIdRef.current
+    const found = items.find((i): i is MarkerPoint => i.type === 'marker' && i.id === id)
+    if (found) {
+      setSelectedContainer(found)
+      restoreContainerIdRef.current = null
+      sessionStorage.removeItem('wcmap_state')
+    }
+  }, [items])
+
+  const handlePositionChange = useCallback((center: [number, number], zoom: number) => {
+    currentPositionRef.current = { center, zoom }
+  }, [])
+
+  const handleBeforeEdit = useCallback(() => {
+    if (!selectedContainer) return
+    try {
+      sessionStorage.setItem(
+        'wcmap_state',
+        JSON.stringify({
+          center: currentPositionRef.current.center,
+          zoom: currentPositionRef.current.zoom,
+          containerId: selectedContainer.id,
+        })
+      )
+    } catch {}
+  }, [selectedContainer])
 
   const fetchData = useCallback(async (zoom: number, bounds: Bounds) => {
     setLoading(true)
@@ -157,6 +225,47 @@ const WasteContainerMapView: React.FC = () => {
     setSelectMode(false)
   }, [])
 
+  const handleAddressNavigate = useCallback(async () => {
+    const query = addressQuery.trim()
+    if (!query) {
+      setAddressError('Въведете адрес или място')
+      return
+    }
+
+    setAddressLoading(true)
+    setAddressError(null)
+    try {
+      const params = new URLSearchParams({
+        q: `${query}, Sofia, Bulgaria`,
+        format: 'jsonv2',
+        limit: '1',
+        countrycodes: 'bg',
+        addressdetails: '0',
+      })
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const results = (await res.json()) as Array<{ lat: string; lon: string }>
+      const first = results[0]
+      if (!first) {
+        setAddressError('Адресът не беше открит')
+        return
+      }
+      const lat = Number(first.lat)
+      const lng = Number(first.lon)
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        setAddressError('Невалидни координати от търсене')
+        return
+      }
+      setFlyToTarget([lat, lng])
+      setSelectedContainer(null)
+      setNewPin(null)
+    } catch (e) {
+      setAddressError(e instanceof Error ? e.message : 'Неуспешно търсене на адрес')
+    } finally {
+      setAddressLoading(false)
+    }
+  }, [addressQuery])
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       {/* Header */}
@@ -184,6 +293,52 @@ const WasteContainerMapView: React.FC = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'stretch' }}>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <input
+                type="text"
+                value={addressQuery}
+                placeholder="Навигация по адрес (напр. бул. Витоша 1)"
+                onChange={(e) => {
+                  setAddressQuery(e.target.value)
+                  if (addressError) setAddressError(null)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    void handleAddressNavigate()
+                  }
+                }}
+                style={{
+                  width: 300,
+                  padding: '7px 10px',
+                  borderRadius: 6,
+                  border: '1px solid #D1D5DB',
+                  fontSize: 13,
+                  outline: 'none',
+                }}
+              />
+              <button
+                onClick={() => void handleAddressNavigate()}
+                disabled={addressLoading}
+                style={{
+                  padding: '7px 12px',
+                  borderRadius: 6,
+                  border: '1px solid #D1D5DB',
+                  background: addressLoading ? '#E5E7EB' : '#fff',
+                  color: '#374151',
+                  cursor: addressLoading ? 'default' : 'pointer',
+                  fontSize: 13,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {addressLoading ? 'Търсене…' : 'Отиди'}
+              </button>
+            </div>
+            <p style={{ margin: 0, minHeight: '1.2em', fontSize: 12, color: '#DC2626' }}>
+              {addressError ?? '\u00a0'}
+            </p>
+          </div>
           {!isClustered && (
             <button
               onClick={() => {
@@ -269,6 +424,10 @@ const WasteContainerMapView: React.FC = () => {
             onMarkerClick={handleMarkerClick}
             onMapClick={handleMapClick}
             onViewportChange={handleViewportChange}
+            initialCenter={initialCenter}
+            initialZoom={initialZoom}
+            onPositionChange={handlePositionChange}
+            flyToTarget={flyToTarget}
           />
         )}
 
@@ -278,6 +437,7 @@ const WasteContainerMapView: React.FC = () => {
             container={selectedContainer}
             onClose={() => setSelectedContainer(null)}
             onContainerUpdated={handleContainerUpdated}
+            onBeforeEdit={handleBeforeEdit}
           />
         )}
 

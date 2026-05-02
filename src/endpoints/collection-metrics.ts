@@ -118,11 +118,11 @@ export const collectionMetrics: Endpoint = {
         )
         SELECT
           CASE
-            WHEN EXTRACT(EPOCH FROM (NOW() - last_cleaned_at)) / 3600 < 24  THEN '<1'
-            WHEN EXTRACT(EPOCH FROM (NOW() - last_cleaned_at)) / 3600 < 48  THEN '1-2'
-            WHEN EXTRACT(EPOCH FROM (NOW() - last_cleaned_at)) / 3600 < 72  THEN '2-3'
-            WHEN EXTRACT(EPOCH FROM (NOW() - last_cleaned_at)) / 3600 < 168 THEN '3-7'
-            WHEN EXTRACT(EPOCH FROM (NOW() - last_cleaned_at)) / 3600 < 336 THEN '7-14'
+            WHEN EXTRACT(EPOCH FROM (NOW() - last_cleaned_at)) / 3600 < 24  THEN '<1 ден'
+            WHEN EXTRACT(EPOCH FROM (NOW() - last_cleaned_at)) / 3600 < 48  THEN '1-2 дни'
+            WHEN EXTRACT(EPOCH FROM (NOW() - last_cleaned_at)) / 3600 < 72  THEN '2-3 дни'
+            WHEN EXTRACT(EPOCH FROM (NOW() - last_cleaned_at)) / 3600 < 168 THEN '3-7 дни'
+            WHEN EXTRACT(EPOCH FROM (NOW() - last_cleaned_at)) / 3600 < 336 THEN '7-14 дни'
             WHEN last_cleaned_at IS NULL                                    THEN 'N/A'
             ELSE '14+'
           END AS bucket,
@@ -148,6 +148,59 @@ export const collectionMetrics: Endpoint = {
         bucket: row.bucket,
         bucketOrder: row.bucket_order,
         containerCount: row.container_count,
+      }))
+
+      // ── Daily trendline data (per day in range) ───────────────────────────
+      // Returns one row per day with fixed total container count and
+      // unique containers collected on that day.
+      const dailyTrendQuery = sql`
+        WITH day_series AS (
+          SELECT generate_series(
+            DATE_TRUNC('day', ${fromIso}::timestamptz)::date,
+            DATE_TRUNC('day', ${toIso}::timestamptz)::date,
+            INTERVAL '1 day'
+          )::date AS day
+        ),
+        total_containers AS (
+          SELECT COUNT(DISTINCT wc.id)::int AS total_containers
+          FROM waste_containers wc
+          LEFT JOIN city_districts cd ON cd.id = wc.district_id
+          WHERE cd.code = 'RTR' AND wc.capacity_volume = 1.1
+        ),
+        collected_per_day AS (
+          SELECT
+            (wco.cleaned_at AT TIME ZONE 'Europe/Sofia')::date AS day,
+            COUNT(DISTINCT wco.container_id)::int              AS collected_containers
+          FROM waste_container_observations wco
+          JOIN waste_containers wc ON wc.id = wco.container_id
+          LEFT JOIN city_districts cd ON cd.id = wc.district_id
+          WHERE wco.cleaned_at >= ${fromIso}::timestamptz
+            AND wco.cleaned_at <= ${toIso}::timestamptz
+            AND cd.code = 'RTR'
+            AND wc.capacity_volume = 1.1
+          GROUP BY (wco.cleaned_at AT TIME ZONE 'Europe/Sofia')::date
+        )
+        SELECT
+          ds.day::text                                           AS day_iso,
+          tc.total_containers::int                               AS total_containers,
+          COALESCE(cpd.collected_containers, 0)::int             AS collected_containers
+        FROM day_series ds
+        CROSS JOIN total_containers tc
+        LEFT JOIN collected_per_day cpd ON cpd.day = ds.day
+        ORDER BY ds.day
+      `
+
+      const dailyTrendResult = await payload.db.drizzle.execute(dailyTrendQuery)
+      const byDay = (
+        dailyTrendResult.rows as {
+          day_iso: string
+          total_containers: number
+          collected_containers: number
+        }[]
+      ).map((row) => ({
+        date: row.day_iso,
+        totalContainers: row.total_containers,
+        collectedContainers: row.collected_containers,
       }))
 
       // ── Schedule compliance ─────────────────────────────────────────────────
@@ -190,6 +243,7 @@ export const collectionMetrics: Endpoint = {
         to: toIso,
         byDistrict,
         byZone,
+        byDay,
         byTimeSinceCollection,
         scheduleCompliance,
       })

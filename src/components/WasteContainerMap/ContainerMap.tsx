@@ -123,6 +123,17 @@ function ViewportTracker({
   return null
 }
 
+function FlyToTarget({ target }: { target: [number, number] | null }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!target) return
+    map.flyTo(target, Math.max(map.getZoom(), 16), { duration: 0.8 })
+  }, [map, target])
+
+  return null
+}
+
 /**
  * MarkersLayer — uses two Leaflet LayerGroups (double-buffer) to swap marker sets
  * without ever leaving the map blank. While the front group stays visible, the back
@@ -195,6 +206,7 @@ interface ContainerMapProps {
   onMarkerClick: (container: ContainerWithSignals) => void
   onMapClick: (lat: number, lng: number, screenX: number, screenY: number) => void
   onViewportChange: (zoom: number, bounds: Bounds) => void
+  flyToTarget: [number, number] | null
 }
 
 export function ContainerMap({
@@ -204,6 +216,7 @@ export function ContainerMap({
   onMarkerClick,
   onMapClick,
   onViewportChange,
+  flyToTarget,
 }: ContainerMapProps) {
   const handleMapClick = useCallback(
     (lat: number, lng: number, screenX: number, screenY: number) => {
@@ -224,6 +237,7 @@ export function ContainerMap({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <MapClickHandler onMapClick={handleMapClick} />
+      <FlyToTarget target={flyToTarget} />
       <ViewportTracker onViewportChange={onViewportChange} />
       <MarkersLayer items={items} selectedIds={selectedIds} onMarkerClick={onMarkerClick} />
     </MapContainer>

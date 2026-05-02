@@ -1,7 +1,9 @@
 'use client'
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useAuth } from '@payloadcms/ui'
 import dynamic from 'next/dynamic'
+import { isCityInfrastructureAdmin } from '@/access/cityInfrastructureAdmin'
 import { SofiaGerbMark } from '@/components/AdminBrand/SofiaGerbMark'
 import {
   Bounds,
@@ -47,6 +49,8 @@ interface NewPinLocation {
 }
 
 const WasteContainerMapView: React.FC = () => {
+  const { user } = useAuth()
+  const hasAccess = isCityInfrastructureAdmin(user?.role)
   const [items, setItems] = useState<MapItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -60,70 +64,6 @@ const WasteContainerMapView: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [newPin, setNewPin] = useState<NewPinLocation | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // Restore map position + selection after browser back from the edit page
-  const [{ initialCenter, initialZoom, restoreId }] = useState<{
-    initialCenter: [number, number]
-    initialZoom: number
-    restoreId: number | null
-  }>(() => {
-    const defaults = {
-      initialCenter: [42.6977, 23.3219] as [number, number],
-      initialZoom: 12,
-      restoreId: null,
-    }
-    if (typeof window === 'undefined') return defaults
-    try {
-      const raw = sessionStorage.getItem('wcmap_state')
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        return {
-          initialCenter: Array.isArray(parsed.center)
-            ? (parsed.center as [number, number])
-            : defaults.initialCenter,
-          initialZoom: typeof parsed.zoom === 'number' ? parsed.zoom : defaults.initialZoom,
-          restoreId: typeof parsed.containerId === 'number' ? parsed.containerId : null,
-        }
-      }
-    } catch {}
-    return defaults
-  })
-
-  const restoreContainerIdRef = useRef<number | null>(restoreId)
-  const currentPositionRef = useRef<{ center: [number, number]; zoom: number }>({
-    center: initialCenter,
-    zoom: initialZoom,
-  })
-
-  // Once items arrive, check if we need to restore a selected container
-  useEffect(() => {
-    if (restoreContainerIdRef.current === null) return
-    const id = restoreContainerIdRef.current
-    const found = items.find((i): i is MarkerPoint => i.type === 'marker' && i.id === id)
-    if (found) {
-      setSelectedContainer(found)
-      restoreContainerIdRef.current = null
-      sessionStorage.removeItem('wcmap_state')
-    }
-  }, [items])
-
-  const handlePositionChange = useCallback((center: [number, number], zoom: number) => {
-    currentPositionRef.current = { center, zoom }
-  }, [])
-
-  const handleBeforeEdit = useCallback(() => {
-    if (!selectedContainer) return
-    try {
-      sessionStorage.setItem(
-        'wcmap_state',
-        JSON.stringify({
-          center: currentPositionRef.current.center,
-          zoom: currentPositionRef.current.zoom,
-          containerId: selectedContainer.id,
-        })
-      )
-    } catch {}
-  }, [selectedContainer])
 
   const fetchData = useCallback(async (zoom: number, bounds: Bounds) => {
     setLoading(true)
@@ -267,6 +207,25 @@ const WasteContainerMapView: React.FC = () => {
     }
   }, [addressQuery])
 
+  if (!hasAccess) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 320,
+          padding: 24,
+          color: 'var(--theme-text)',
+          fontSize: 16,
+          fontWeight: 600,
+        }}
+      >
+        Нямате достъп до картата на контейнерите.
+      </div>
+    )
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       {/* Header */}
@@ -408,9 +367,6 @@ const WasteContainerMapView: React.FC = () => {
             onMarkerClick={handleMarkerClick}
             onMapClick={handleMapClick}
             onViewportChange={handleViewportChange}
-            initialCenter={initialCenter}
-            initialZoom={initialZoom}
-            onPositionChange={handlePositionChange}
             flyToTarget={flyToTarget}
           />
         )}
@@ -421,7 +377,6 @@ const WasteContainerMapView: React.FC = () => {
             container={selectedContainer}
             onClose={() => setSelectedContainer(null)}
             onContainerUpdated={handleContainerUpdated}
-            onBeforeEdit={handleBeforeEdit}
           />
         )}
 

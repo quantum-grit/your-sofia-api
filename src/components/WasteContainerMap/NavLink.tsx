@@ -1,13 +1,18 @@
 'use client'
 
 import React from 'react'
+import { useAuth } from '@payloadcms/ui'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { MapPin } from 'lucide-react'
+import { isCityInfrastructureAdmin } from '@/access/cityInfrastructureAdmin'
 
 const WasteContainerMapNavLink: React.FC = () => {
+  const { user } = useAuth()
   const pathname = usePathname()
   const isActive = pathname?.startsWith('/admin/waste-map')
+
+  if (!isCityInfrastructureAdmin(user?.role)) return null
 
   return (
     <div style={{ padding: '0 8px' }}>

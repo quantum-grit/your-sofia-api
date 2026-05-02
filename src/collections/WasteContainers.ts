@@ -167,16 +167,6 @@ export const WasteContainers: CollectionConfig = {
               },
             },
             {
-              name: 'serviceInterval',
-              label: 'Честота на обслужване',
-              type: 'text',
-              required: false,
-              admin: {
-                description:
-                  'Колко често се обслужва контейнерът (напр. "Ежедневно", "Всеки понеделник и четвъртък", "Два пъти седмично")',
-              },
-            },
-            {
               name: 'collectionDaysOfWeek',
               label: 'Дни за събиране',
               type: 'select',
@@ -200,8 +190,8 @@ export const WasteContainers: CollectionConfig = {
               type: 'number',
               defaultValue: 1,
               min: 1,
-              max: 2,
-              admin: { description: 'Колко пъти на ден се събира този контейнер (1 или 2)' },
+              max: 5,
+              admin: { description: 'Колко пъти на ден се събира този контейнер (1 до 5)' },
             },
             {
               name: 'scheduleSource',

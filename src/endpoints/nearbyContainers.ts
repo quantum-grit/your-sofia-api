@@ -58,7 +58,6 @@ export const nearbyContainers: Endpoint = {
           wc.waste_type,
           wc.status,
           wc.capacity_size,
-          wc.service_interval,
           wc.serviced_by,
           wc.notes,
           wc.last_cleaned,
@@ -105,7 +104,6 @@ export const nearbyContainers: Endpoint = {
         address: string
         capacity_volume: string
         capacity_size: string
-        service_interval: string
         serviced_by: string
         waste_type: string
         status: string
@@ -128,7 +126,6 @@ export const nearbyContainers: Endpoint = {
         address: row.address,
         capacityVolume: parseFloat(row.capacity_volume),
         capacitySize: row.capacity_size,
-        serviceInterval: row.service_interval,
         servicedBy: row.serviced_by,
         wasteType: row.waste_type,
         status: row.status,

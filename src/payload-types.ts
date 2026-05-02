@@ -963,15 +963,11 @@ export interface WasteContainer {
    */
   binCount?: number | null;
   /**
-   * Колко често се обслужва контейнерът (напр. "Ежедневно", "Всеки понеделник и четвъртък", "Два пъти седмично")
-   */
-  serviceInterval?: string | null;
-  /**
    * ISO номера на делничния ден (1=Пон, 7=Нед), от импорт на график
    */
   collectionDaysOfWeek?: ('1' | '2' | '3' | '4' | '5' | '6' | '7')[] | null;
   /**
-   * Колко пъти на ден се събира този контейнер (1 или 2)
+   * Колко пъти на ден се събира този контейнер (1 до 5)
    */
   collectionTimesPerDay?: number | null;
   /**
@@ -2027,7 +2023,6 @@ export interface WasteContainersSelect<T extends boolean = true> {
   capacityVolume?: T;
   capacitySize?: T;
   binCount?: T;
-  serviceInterval?: T;
   collectionDaysOfWeek?: T;
   collectionTimesPerDay?: T;
   scheduleSource?: T;

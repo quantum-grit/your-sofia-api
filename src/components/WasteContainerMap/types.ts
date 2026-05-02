@@ -46,6 +46,7 @@ export function applyFilters(containers: MarkerPoint[], filters: FilterState): M
   return containers.filter((c) => {
     if (filters.statuses.length > 0 && !filters.statuses.includes(c.status)) return false
     if (filters.wasteTypes.length > 0 && !filters.wasteTypes.includes(c.wasteType)) return false
+    if (filters.districtId !== null && c.districtId !== Number(filters.districtId)) return false
     if (filters.hasActiveSignals && c.activeSignalCount === 0) return false
     return true
   })

@@ -55,9 +55,9 @@ function Chip({
       style={{
         padding: '3px 10px',
         borderRadius: 999,
-        border: `1px solid ${active ? (color ?? '#1E40AF') : '#D1D5DB'}`,
-        background: active ? (color ?? '#1E40AF') + '20' : '#fff',
-        color: active ? (color ?? '#1E40AF') : '#6B7280',
+        border: `1px solid ${active ? (color ?? '#1E40AF') : 'var(--theme-elevation-200, #D1D5DB)'}`,
+        background: active ? (color ?? '#1E40AF') + '20' : 'var(--theme-elevation-0, #fff)',
+        color: active ? (color ?? '#1E40AF') : 'var(--theme-text)',
         fontWeight: active ? 600 : 400,
         fontSize: 12,
         cursor: 'pointer',
@@ -118,7 +118,7 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--theme-text)' }}>
           Филтри {hasActiveFilters && '●'}
         </span>
-        <span style={{ fontSize: 11, color: '#9CA3AF', marginLeft: 'auto' }}>
+        <span style={{ fontSize: 11, color: 'var(--theme-text)', marginLeft: 'auto' }}>
           {expanded ? '▲ Скрий' : '▼ Покажи'}
         </span>
         {hasActiveFilters && (
@@ -130,10 +130,10 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
             style={{
               padding: '2px 8px',
               fontSize: 11,
-              border: '1px solid #D1D5DB',
+              border: '1px solid var(--theme-elevation-200, #D1D5DB)',
               borderRadius: 999,
-              background: '#fff',
-              color: '#6B7280',
+              background: 'var(--theme-elevation-0, #fff)',
+              color: 'var(--theme-text)',
               cursor: 'pointer',
             }}
           >
@@ -182,17 +182,19 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
           <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
             {districts.length > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 12, color: '#6B7280', fontWeight: 500 }}>Район:</span>
+                <span style={{ fontSize: 12, color: 'var(--theme-text)', fontWeight: 500 }}>
+                  Район:
+                </span>
                 <select
                   value={filters.districtId ?? ''}
                   onChange={(e) => onChange({ ...filters, districtId: e.target.value || null })}
                   style={{
                     padding: '3px 8px',
                     borderRadius: 6,
-                    border: '1px solid #D1D5DB',
+                    border: '1px solid var(--theme-elevation-200, #D1D5DB)',
                     fontSize: 12,
-                    background: '#fff',
-                    color: '#374151',
+                    background: 'var(--theme-elevation-0, #fff)',
+                    color: 'var(--theme-text)',
                   }}
                 >
                   <option value="">Всички</option>
@@ -211,7 +213,9 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
                 onChange={(e) => onChange({ ...filters, hasActiveSignals: e.target.checked })}
                 style={{ cursor: 'pointer' }}
               />
-              <span style={{ fontSize: 12, color: '#374151' }}>Само с активни сигнали</span>
+              <span style={{ fontSize: 12, color: 'var(--theme-text)' }}>
+                Само с активни сигнали
+              </span>
             </label>
           </div>
         </div>
@@ -223,7 +227,7 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
 function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-      <span style={{ fontSize: 12, color: '#6B7280', fontWeight: 500, minWidth: 70 }}>
+      <span style={{ fontSize: 12, color: 'var(--theme-text)', fontWeight: 500, minWidth: 70 }}>
         {label}:
       </span>
       {children}

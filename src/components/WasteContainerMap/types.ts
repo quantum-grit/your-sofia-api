@@ -19,7 +19,6 @@ export interface ContainerWithSignals {
   address?: string | null
   notes?: string | null
   servicedBy?: string | null
-  serviceInterval?: string | null
   lastCleaned?: string | null
   binCount?: number | null
   districtId?: number | null

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useState } from 'react'
+import { SofiaGerbMark } from '@/components/AdminBrand/SofiaGerbMark'
 import {
   Bar,
   BarChart,
@@ -194,18 +195,25 @@ const MetricsDashboard: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          background: '#fff',
+          padding: '16px 20px',
+          borderRadius: 12,
           marginBottom: 32,
         }}
       >
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: '#111827' }}>
-            Waste Collection Metrics
-          </h1>
-          {data && (
-            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6B7280' }}>
-              {new Date(data.from).toLocaleDateString()} – {new Date(data.to).toLocaleDateString()}
-            </p>
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <SofiaGerbMark size={48} />
+          <div>
+            <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: '#111827' }}>
+              Waste Collection Metrics
+            </h1>
+            {data && (
+              <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6B7280' }}>
+                {new Date(data.from).toLocaleDateString()} –{' '}
+                {new Date(data.to).toLocaleDateString()}
+              </p>
+            )}
+          </div>
         </div>
         {/* Range selector */}
         <div style={{ display: 'flex', gap: 8 }}>

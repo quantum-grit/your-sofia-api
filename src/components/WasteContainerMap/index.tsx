@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { SofiaGerbMark } from '@/components/AdminBrand/SofiaGerbMark'
 import {
   Bounds,
   ContainerWithSignals,
@@ -277,20 +278,23 @@ const WasteContainerMapView: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           flexShrink: 0,
-          background: 'var(--theme-bg)',
+          background: '#fff',
         }}
       >
-        <div>
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--theme-text)' }}>
-            Карта на контейнерите за отпадъци
-          </h1>
-          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#6B7280', minHeight: '1.4em' }}>
-            {items.length > 0
-              ? isClustered
-                ? `${items.length} кластера — приближете за детайли`
-                : `${filtered.length} от ${markers.length} контейнера`
-              : '\u00a0'}
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <SofiaGerbMark size={44} />
+          <div>
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#111827' }}>
+              Административна карта на контейнерите за отпадъци
+            </h1>
+            <p style={{ margin: '2px 0 0', fontSize: 13, color: '#6B7280', minHeight: '1.4em' }}>
+              {items.length > 0
+                ? isClustered
+                  ? `${items.length} групи — приближете за детайли`
+                  : `${filtered.length} от ${markers.length} контейнера`
+                : '\u00a0'}
+            </p>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'stretch' }}>
@@ -316,6 +320,8 @@ const WasteContainerMapView: React.FC = () => {
                   border: '1px solid #D1D5DB',
                   fontSize: 13,
                   outline: 'none',
+                  background: '#fff',
+                  color: '#374151',
                 }}
               />
               <button
@@ -339,28 +345,6 @@ const WasteContainerMapView: React.FC = () => {
               {addressError ?? '\u00a0'}
             </p>
           </div>
-          {!isClustered && (
-            <button
-              onClick={() => {
-                setSelectMode((v) => !v)
-                setSelectedIds(new Set())
-                setSelectedContainer(null)
-                setNewPin(null)
-              }}
-              style={{
-                padding: '7px 14px',
-                borderRadius: 6,
-                border: '1px solid #D1D5DB',
-                background: selectMode ? '#1E40AF' : '#fff',
-                color: selectMode ? '#fff' : '#374151',
-                fontWeight: selectMode ? 600 : 400,
-                cursor: 'pointer',
-                fontSize: 13,
-              }}
-            >
-              {selectMode ? 'Отказ от избор' : 'Масов избор'}
-            </button>
-          )}
         </div>
       </div>
 

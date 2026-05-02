@@ -1,6 +1,7 @@
 import { Banner } from '@payloadcms/ui/elements/Banner'
 import React from 'react'
 
+import { SofiaGerbMark } from '@/components/AdminBrand/SofiaGerbMark'
 import { SeedButton } from './SeedButton'
 import './index.scss'
 
@@ -9,6 +10,22 @@ const baseClass = 'before-dashboard'
 const BeforeDashboard: React.FC = () => {
   return (
     <div className={baseClass}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+          marginBottom: 16,
+        }}
+      >
+        <SofiaGerbMark size={48} />
+        <div>
+          <h3 style={{ margin: 0 }}>Твоята София: Административен Сайт</h3>
+          <p style={{ margin: '4px 0 0', color: '#6B7280' }}>
+            Панел за управление на общинското съдържание и данни.
+          </p>
+        </div>
+      </div>
       <Banner className={`${baseClass}__banner`} type="success">
         <h4>Welcome to your dashboard!</h4>
       </Banner>

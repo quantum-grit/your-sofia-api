@@ -62,7 +62,9 @@ export function NewlyCreatedContainersChart() {
           from: toYmd(periodStart),
           to: toYmd(periodEnd),
         })
-        const response = await fetch(`/api/waste-containers/newly-created-metrics?${params}`)
+        const response = await fetch(
+          `/api/waste-containers/newly-created-containers-metric?${params}`
+        )
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
         const json = (await response.json()) as ApiResponse

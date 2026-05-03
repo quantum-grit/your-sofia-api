@@ -19,8 +19,8 @@ function addUtcDays(date: Date, days: number): Date {
   return next
 }
 
-export const newlyCreatedMetrics: Endpoint = {
-  path: '/newly-created-metrics',
+export const newlyCreatedContainersMetric: Endpoint = {
+  path: '/newly-created-containers-metric',
   method: 'get',
   handler: async (req) => {
     const { payload } = req

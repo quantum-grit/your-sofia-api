@@ -4,7 +4,7 @@ import { nearbyContainers } from '../endpoints/nearbyContainers'
 import { containersWithSignalCount } from '@/endpoints/containers-with-signals'
 import { collectionMetrics } from '@/endpoints/collection-metrics'
 import { bulkUpdateContainerStatus } from '@/endpoints/bulkUpdateContainerStatus'
-import { newlyCreatedMetrics } from '@/endpoints/newly-created-metrics'
+import { newlyCreatedContainersMetric } from '@/endpoints/newly-created-containers-metric'
 import { locationMapField } from '@/fields/locationMap'
 import {
   canViewCityInfrastructure,
@@ -33,7 +33,7 @@ export const WasteContainers: CollectionConfig = {
     nearbyContainers,
     containersWithSignalCount,
     collectionMetrics,
-    newlyCreatedMetrics,
+    newlyCreatedContainersMetric,
     bulkUpdateContainerStatus,
   ],
   access: {

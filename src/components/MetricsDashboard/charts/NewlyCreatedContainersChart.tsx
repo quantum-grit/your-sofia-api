@@ -199,10 +199,11 @@ export function NewlyCreatedContainersChart() {
                     fill={palette.warning}
                     radius={[4, 4, 0, 0]}
                     cursor="pointer"
-                    onClick={(_, index) => {
-                      if (typeof index !== 'number') return
-                      const clickedDay = chartData[index]
-                      if (!clickedDay) return
+                    onClick={(barData) => {
+                      const clickedDay = barData?.payload as
+                        | { date?: string; dayEndExclusive?: string }
+                        | undefined
+                      if (!clickedDay?.date || !clickedDay?.dayEndExclusive) return
                       openMapForDay(clickedDay.date, clickedDay.dayEndExclusive)
                     }}
                   >

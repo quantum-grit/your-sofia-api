@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { SofiaGerbMark } from '@/components/AdminBrand/SofiaGerbMark'
 import { CollectionByGroupChart } from './charts/CollectionByGroupChart'
-import { MonthlyTrendChart } from './charts/MonthlyTrendChart'
 import { NewlyCreatedContainersChart } from './charts/NewlyCreatedContainersChart'
 import { ScheduleComplianceChart } from './charts/ScheduleComplianceChart'
 import { palette } from './charts/shared'
@@ -53,14 +52,17 @@ interface MetricsData {
 }
 
 type Range = 'day' | 'week' | 'month'
-type ChartTab = 'zone' | 'district'
 
 function buildRange(range: Range): { from: string; to: string } {
   const now = new Date()
   const from = new Date(now)
-  if (range === 'day') from.setDate(from.getDate() - 1)
-  else if (range === 'week') from.setDate(from.getDate() - 7)
-  else from.setDate(from.getDate() - 30)
+  if (range === 'day') {
+    from.setDate(from.getDate())
+  } else if (range === 'week') {
+    from.setDate(from.getDate() - 6)
+  } else {
+    from.setDate(from.getDate() - 29)
+  }
   return { from: from.toISOString(), to: now.toISOString() }
 }
 
@@ -98,7 +100,6 @@ function RangeButton({
 
 const MetricsDashboard: React.FC = () => {
   const [range, setRange] = useState<Range>('week')
-  const [chartTab, setChartTab] = useState<ChartTab>('district')
   const [data, setData] = useState<MetricsData | null>(null)
   const [monthData, setMonthData] = useState<MetricsData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -266,87 +267,25 @@ const MetricsDashboard: React.FC = () => {
       {/* Charts */}
       {!loading && !error && data && (
         <>
-          <div
-            style={{
-              display: 'flex',
-              gap: 12,
-              marginBottom: 8,
-              alignItems: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                backgroundColor: palette.border,
-                borderRadius: 8,
-                padding: 2,
-                maxWidth: 320,
-                width: '100%',
-              }}
-            >
-              <button
-                onClick={() => setChartTab('district')}
-                style={{
-                  flex: 1,
-                  border: 'none',
-                  borderRadius: 6,
-                  backgroundColor: chartTab === 'district' ? palette.surface : 'transparent',
-                  color: chartTab === 'district' ? palette.primary : palette.textSecondary,
-                  fontSize: 13,
-                  fontWeight: chartTab === 'district' ? 600 : 500,
-                  padding: '8px 0',
-                  cursor: 'pointer',
-                }}
-              >
-                By District
-              </button>
-              <button
-                onClick={() => setChartTab('zone')}
-                style={{
-                  flex: 1,
-                  border: 'none',
-                  borderRadius: 6,
-                  backgroundColor: chartTab === 'zone' ? palette.surface : 'transparent',
-                  color: chartTab === 'zone' ? palette.primary : palette.textSecondary,
-                  fontSize: 13,
-                  fontWeight: chartTab === 'zone' ? 600 : 500,
-                  padding: '8px 0',
-                  cursor: 'pointer',
-                }}
-              >
-                By Zone
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <RangeButton
-                label="Last Day"
-                active={range === 'day'}
-                onClick={() => setRange('day')}
-              />
-              <RangeButton
-                label="Last Week"
-                active={range === 'week'}
-                onClick={() => setRange('week')}
-              />
-              <RangeButton
-                label="Last Month"
-                active={range === 'month'}
-                onClick={() => setRange('month')}
-              />
-            </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+            <RangeButton label="Today" active={range === 'day'} onClick={() => setRange('day')} />
+            <RangeButton
+              label="Last 7 Days"
+              active={range === 'week'}
+              onClick={() => setRange('week')}
+            />
+            <RangeButton
+              label="Last 30 Days"
+              active={range === 'month'}
+              onClick={() => setRange('month')}
+            />
           </div>
 
           <CollectionByGroupChart
-            chartTab={chartTab}
             byZone={data.byZone}
             byDistrict={data.byDistrict}
+            byDay={data.byDay}
           />
-          {/* Monthly Collection Trendline (last 30 days) */}
-          {!monthLoading && !monthError && monthData && (
-            <MonthlyTrendChart byDay={monthData.byDay} />
-          )}
           <TimeSinceCollectionChart data={data.byTimeSinceCollection} />
           <ScheduleComplianceChart compliance={data.scheduleCompliance} />
           <NewlyCreatedContainersChart />

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Bar,
   BarChart,
@@ -11,45 +11,137 @@ import {
 } from 'recharts'
 import { palette } from './shared'
 
-interface CollectionByGroupChartProps {
-  chartTab: 'zone' | 'district'
-  byZone: Array<{
+type CollectionByGroupChartProps = {
+  groupBy?: 'zone' | 'district' | 'day'
+  byZone?: Array<{
     zoneName: string
     collectedContainers: number
     totalContainers: number
   }>
-  byDistrict: Array<{
+  byDistrict?: Array<{
     districtName: string
     collectedContainers: number
     totalContainers: number
   }>
+  byDay?: Array<{
+    date: string
+    collectedContainers: number
+    totalContainers: number
+  }>
+  title?: string
 }
 
+const EMPTY_ZONE_DATA: Array<{
+  zoneName: string
+  collectedContainers: number
+  totalContainers: number
+}> = []
+
+const EMPTY_DISTRICT_DATA: Array<{
+  districtName: string
+  collectedContainers: number
+  totalContainers: number
+}> = []
+
+const EMPTY_DAY_DATA: Array<{
+  date: string
+  collectedContainers: number
+  totalContainers: number
+}> = []
+
 export function CollectionByGroupChart({
-  chartTab,
-  byZone,
-  byDistrict,
+  title,
+  groupBy: fixedGroupBy,
+  ...props
 }: CollectionByGroupChartProps) {
-  const zoneChartData = byZone.map((zone) => ({
-    name: zone.zoneName,
-    collectedContainers: zone.collectedContainers,
-    notCollectedContainers: zone.totalContainers - zone.collectedContainers,
-  }))
+  const [tab, setTab] = useState<'zone' | 'district' | 'day'>(fixedGroupBy ?? 'district')
+  const groupBy = fixedGroupBy ?? tab
+  const showTabs = fixedGroupBy === undefined
 
-  const districtChartData = byDistrict.map((district) => ({
-    name: district.districtName,
-    collectedContainers: district.collectedContainers,
-    notCollectedContainers: district.totalContainers - district.collectedContainers,
-  }))
+  let resolvedTitle = title
+  if (!resolvedTitle) {
+    switch (groupBy) {
+      case 'zone':
+        resolvedTitle = 'By Collection Zone'
+        break
+      case 'district':
+        resolvedTitle = 'By Administrative District'
+        break
+      case 'day':
+        resolvedTitle = 'Collection Trendline - Last 30 Days'
+        break
+    }
+  }
 
-  const title = chartTab === 'zone' ? 'By Collection Zone' : 'By Administrative District'
-  const data = chartTab === 'zone' ? zoneChartData : districtChartData
-  const barWidth = Math.max(360, data.length * 56)
+  let data: Array<{ name: string; collectedContainers: number; notCollectedContainers: number }>
+  switch (groupBy) {
+    case 'day':
+      data = (props.byDay ?? EMPTY_DAY_DATA).map((day) => {
+        const [, month, date] = day.date.slice(0, 10).split('-')
+        return {
+          name: `${date}.${month}`,
+          collectedContainers: day.collectedContainers,
+          notCollectedContainers: Math.max(0, day.totalContainers - day.collectedContainers),
+        }
+      })
+      break
+    case 'zone':
+      data = (props.byZone ?? EMPTY_ZONE_DATA).map((zone) => ({
+        name: zone.zoneName,
+        collectedContainers: zone.collectedContainers,
+        notCollectedContainers: zone.totalContainers - zone.collectedContainers,
+      }))
+      break
+    case 'district':
+      data = (props.byDistrict ?? EMPTY_DISTRICT_DATA).map((district) => ({
+        name: district.districtName,
+        collectedContainers: district.collectedContainers,
+        notCollectedContainers: district.totalContainers - district.collectedContainers,
+      }))
+      break
+  }
+
+  const barWidth = Math.max(360, data.length * (groupBy === 'day' ? 34 : 56))
+  const xAxisAngle = groupBy === 'day' ? -45 : -40
+  const xAxisTickMargin = groupBy === 'day' ? 8 : 6
 
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: groupBy === 'day' ? 48 : 20 }}>
+      {showTabs && (
+        <div
+          style={{
+            display: 'flex',
+            backgroundColor: palette.border,
+            borderRadius: 8,
+            padding: 2,
+            maxWidth: 320,
+            marginBottom: 12,
+          }}
+        >
+          {(['district', 'zone', 'day'] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              style={{
+                flex: 1,
+                border: 'none',
+                borderRadius: 6,
+                backgroundColor: tab === t ? palette.surface : 'transparent',
+                color: tab === t ? palette.primary : palette.textSecondary,
+                fontSize: 13,
+                fontWeight: tab === t ? 600 : 500,
+                padding: '8px 0',
+                cursor: 'pointer',
+              }}
+            >
+              {t === 'district' ? 'By District' : t === 'zone' ? 'By Zone' : 'By Date'}
+            </button>
+          ))}
+        </div>
+      )}
       <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10, color: palette.textPrimary }}>
-        {title}
+        {resolvedTitle}
       </h3>
       <div style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -83,10 +175,10 @@ export function CollectionByGroupChart({
               <XAxis
                 dataKey="name"
                 tick={{ fontSize: 11, fill: palette.textSecondary }}
-                angle={-40}
+                angle={xAxisAngle}
                 textAnchor="end"
                 interval={0}
-                tickMargin={6}
+                tickMargin={xAxisTickMargin}
                 axisLine={{ stroke: palette.border }}
                 tickLine={{ stroke: palette.border }}
               />
@@ -119,6 +211,7 @@ export function CollectionByGroupChart({
                 fill={palette.primary}
                 name="collectedContainers"
                 radius={[3, 3, 0, 0]}
+                label={{ position: 'top', fontSize: 10, fill: palette.textSecondary }}
               />
               <Bar
                 dataKey="notCollectedContainers"
@@ -126,6 +219,7 @@ export function CollectionByGroupChart({
                 fill={palette.border}
                 name="notCollectedContainers"
                 radius={[3, 3, 0, 0]}
+                label={{ position: 'insideTop', fontSize: 10, fill: palette.textSecondary }}
               />
             </BarChart>
           </ResponsiveContainer>

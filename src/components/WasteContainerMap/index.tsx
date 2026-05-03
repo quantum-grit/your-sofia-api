@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import dynamic from 'next/dynamic'
+import { useSearchParams } from 'next/navigation'
 import { isCityInfrastructureAdmin } from '@/access/cityInfrastructureAdmin'
 import { SofiaGerbMark } from '@/components/AdminBrand/SofiaGerbMark'
 import {
@@ -50,6 +51,7 @@ interface NewPinLocation {
 
 const WasteContainerMapView: React.FC = () => {
   const { user } = useAuth()
+  const searchParams = useSearchParams()
   const hasAccess = isCityInfrastructureAdmin(user?.role)
   const [items, setItems] = useState<MapItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -64,6 +66,16 @@ const WasteContainerMapView: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [newPin, setNewPin] = useState<NewPinLocation | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const initialZoom = useMemo(() => {
+    const zoomParam = Number(searchParams.get('zoom'))
+    if (Number.isFinite(zoomParam)) {
+      return Math.max(1, Math.min(18, Math.round(zoomParam)))
+    }
+
+    const hasDayFilter = Boolean(searchParams.get('createdFrom') && searchParams.get('createdTo'))
+    return hasDayFilter ? 16 : 12
+  }, [searchParams])
 
   const fetchData = useCallback(async (zoom: number, bounds: Bounds) => {
     setLoading(true)
@@ -101,6 +113,21 @@ const WasteContainerMapView: React.FC = () => {
     },
     []
   )
+
+  useEffect(() => {
+    const status = searchParams.get('status')
+    const createdFrom = searchParams.get('createdFrom')
+    const createdTo = searchParams.get('createdTo')
+
+    if (!status && !createdFrom && !createdTo) return
+
+    setFilters((prev) => ({
+      ...prev,
+      statuses: status ? [status] : prev.statuses,
+      createdFrom: createdFrom ?? prev.createdFrom,
+      createdTo: createdTo ?? prev.createdTo,
+    }))
+  }, [searchParams])
 
   const isClustered = items.length > 0 && items[0]?.type === 'cluster'
   const markers = useMemo(() => items.filter((i): i is MarkerPoint => i.type === 'marker'), [items])
@@ -363,11 +390,13 @@ const WasteContainerMapView: React.FC = () => {
           <ContainerMap
             items={displayItems}
             selectedIds={selectedIds}
+            selectedContainerId={selectedContainer?.id ?? null}
             selectMode={selectMode}
             onMarkerClick={handleMarkerClick}
             onMapClick={handleMapClick}
             onViewportChange={handleViewportChange}
             flyToTarget={flyToTarget}
+            initialZoom={initialZoom}
           />
         )}
 

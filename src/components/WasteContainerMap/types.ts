@@ -33,6 +33,8 @@ export interface FilterState {
   wasteTypes: string[]
   districtId: string | null
   hasActiveSignals: boolean
+  createdFrom: string | null
+  createdTo: string | null
 }
 
 export const EMPTY_FILTERS: FilterState = {
@@ -40,14 +42,23 @@ export const EMPTY_FILTERS: FilterState = {
   wasteTypes: [],
   districtId: null,
   hasActiveSignals: false,
+  createdFrom: null,
+  createdTo: null,
 }
 
 export function applyFilters(containers: MarkerPoint[], filters: FilterState): MarkerPoint[] {
+  const createdFromTime = filters.createdFrom ? new Date(filters.createdFrom).getTime() : null
+  const createdToTime = filters.createdTo ? new Date(filters.createdTo).getTime() : null
+
   return containers.filter((c) => {
+    const createdAtTime = new Date(c.createdAt).getTime()
+
     if (filters.statuses.length > 0 && !filters.statuses.includes(c.status)) return false
     if (filters.wasteTypes.length > 0 && !filters.wasteTypes.includes(c.wasteType)) return false
     if (filters.districtId !== null && c.districtId !== Number(filters.districtId)) return false
     if (filters.hasActiveSignals && c.activeSignalCount === 0) return false
+    if (createdFromTime !== null && createdAtTime < createdFromTime) return false
+    if (createdToTime !== null && createdAtTime >= createdToTime) return false
     return true
   })
 }

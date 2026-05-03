@@ -174,12 +174,12 @@ const MetricsDashboard: React.FC = () => {
           <SofiaGerbMark size={48} />
           <div>
             <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: palette.textPrimary }}>
-              Waste Collection Metrics
+              Оперативни метрики за сметосъбирането в София
             </h1>
             {data && (
               <p style={{ margin: '4px 0 0', fontSize: 13, color: palette.textSecondary }}>
-                {new Date(data.from).toLocaleDateString()} –{' '}
-                {new Date(data.to).toLocaleDateString()}
+                {new Date(data.from).toLocaleDateString('bg-BG')} –{' '}
+                {new Date(data.to).toLocaleDateString('bg-BG')}
               </p>
             )}
           </div>
@@ -189,28 +189,38 @@ const MetricsDashboard: React.FC = () => {
       {/* Summary stats */}
       {data && (
         <div style={{ display: 'flex', gap: 16, marginBottom: 36, flexWrap: 'wrap' }}>
-          {[
-            {
-              label: 'Total Containers',
-              value: data.byZone.reduce((s, z) => s + z.totalContainers, 0),
-              color: palette.textSecondary,
-            },
-            {
-              label: 'Collected in Period',
-              value: data.byZone.reduce((s, z) => s + z.collectedContainers, 0),
-              color: palette.primary,
-            },
-            {
-              label: 'Zones',
-              value: data.byZone.length,
-              color: palette.success,
-            },
-            {
-              label: 'Districts with Data',
-              value: data.byDistrict.filter((d) => d.collectedContainers > 0).length,
-              color: palette.warning,
-            },
-          ].map((stat) => (
+          {(() => {
+            const totalContainers = data.byZone.reduce((sum, zone) => sum + zone.totalContainers, 0)
+            const collectedContainers = data.byZone.reduce(
+              (sum, zone) => sum + zone.collectedContainers,
+              0
+            )
+            const collectedPercentage =
+              totalContainers > 0 ? Math.round((collectedContainers / totalContainers) * 100) : 0
+
+            return [
+              {
+                label: 'Общо контейнери',
+                value: totalContainers,
+                color: palette.textPrimary,
+              },
+              {
+                label: 'Събрани за периода',
+                value: `${collectedContainers} (${collectedPercentage}%)`,
+                color: palette.textPrimary,
+              },
+              {
+                label: 'Зони',
+                value: data.byZone.length,
+                color: palette.textPrimary,
+              },
+              {
+                label: 'Райони',
+                value: data.byDistrict.filter((d) => d.collectedContainers > 0).length,
+                color: palette.textPrimary,
+              },
+            ]
+          })().map((stat) => (
             <div
               key={stat.label}
               style={{
@@ -235,12 +245,12 @@ const MetricsDashboard: React.FC = () => {
       {/* Loading / error states */}
       {loading && (
         <div style={{ textAlign: 'center', padding: 60, color: palette.textSecondary }}>
-          Loading metrics…
+          Зареждане на метриките…
         </div>
       )}
       {error && (
         <div style={{ textAlign: 'center', padding: 40, color: palette.error }}>
-          <p style={{ margin: '0 0 12px' }}>Failed to load: {error}</p>
+          <p style={{ margin: '0 0 12px' }}>Грешка при зареждане: {error}</p>
           <button
             onClick={() =>
               fetchMetrics(range, {
@@ -259,7 +269,7 @@ const MetricsDashboard: React.FC = () => {
               cursor: 'pointer',
             }}
           >
-            Retry
+            Опитай отново
           </button>
         </div>
       )}
@@ -268,14 +278,14 @@ const MetricsDashboard: React.FC = () => {
       {!loading && !error && data && (
         <>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-            <RangeButton label="Today" active={range === 'day'} onClick={() => setRange('day')} />
+            <RangeButton label="Днес" active={range === 'day'} onClick={() => setRange('day')} />
             <RangeButton
-              label="Last 7 Days"
+              label="Последните 7 дни"
               active={range === 'week'}
               onClick={() => setRange('week')}
             />
             <RangeButton
-              label="Last 30 Days"
+              label="Последните 30 дни"
               active={range === 'month'}
               onClick={() => setRange('month')}
             />

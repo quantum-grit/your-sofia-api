@@ -55,8 +55,6 @@ export const newlyCreatedContainersMetric: Endpoint = {
 					WHERE wc.status = 'pending'
 						AND wc.created_at >= ${fromIso}::timestamptz
 						AND wc.created_at < ${toExclusiveIso}::timestamptz
-						AND cd.code = 'RTR'
-						AND wc.capacity_volume = 1.1
 					GROUP BY (wc.created_at AT TIME ZONE 'Europe/Sofia')::date
 				)
 				SELECT

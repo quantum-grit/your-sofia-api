@@ -68,7 +68,8 @@ const WasteContainerMapView: React.FC = () => {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const initialZoom = useMemo(() => {
-    const zoomParam = Number(searchParams.get('zoom'))
+    const zoomParam = Number(searchParams.get('zoom') ?? 12)
+
     if (Number.isFinite(zoomParam)) {
       return Math.max(1, Math.min(18, Math.round(zoomParam)))
     }

@@ -2,20 +2,12 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { SofiaGerbMark } from '@/components/AdminBrand/SofiaGerbMark'
-import { colors as designColors } from '@/cssVariables'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ComposedChart,
-  Legend,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { CollectionByGroupChart } from './charts/CollectionByGroupChart'
+import { MonthlyTrendChart } from './charts/MonthlyTrendChart'
+import { NewlyCreatedContainersChart } from './charts/NewlyCreatedContainersChart'
+import { ScheduleComplianceChart } from './charts/ScheduleComplianceChart'
+import { palette } from './charts/shared'
+import { TimeSinceCollectionChart } from './charts/TimeSinceCollectionChart'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -74,26 +66,6 @@ function buildRange(range: Range): { from: string; to: string } {
 
 // ─── Sub-components ────────────────────────────────────────────────────────
 
-const palette = {
-  primary: designColors.primaryLight,
-  primaryLight: designColors.primaryLight,
-  border: `var(--theme-elevation-200, ${designColors.border})`,
-  textPrimary: `var(--theme-text, ${designColors.textPrimary})`,
-  textSecondary: `var(--theme-elevation-700, ${designColors.textSecondary})`,
-  textMuted: `var(--theme-elevation-500, ${designColors.textMuted})`,
-  success: designColors.success,
-  warning: designColors.warning,
-  error: designColors.error,
-  surface: `var(--theme-elevation-0, ${designColors.surface})`,
-  surfaceHigh: `var(--theme-elevation-50, ${designColors.surface2})`,
-}
-
-function colorByBucketOrder(order: number): string {
-  if (order === 0) return palette.success
-  if (order === 1) return palette.warning
-  return palette.error
-}
-
 function RangeButton({
   label,
   active,
@@ -119,108 +91,6 @@ function RangeButton({
     >
       {label}
     </button>
-  )
-}
-
-function ChartSection({
-  title,
-  data,
-  dataKey,
-  nameKey,
-  legend,
-}: {
-  title: string
-  data: Record<string, unknown>[]
-  dataKey: { collected: string; notCollected: string }
-  nameKey: string
-  legend: { collected: string; total: string }
-}) {
-  const barWidth = Math.max(360, data.length * 56)
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10, color: palette.textPrimary }}>
-        {title}
-      </h3>
-      <div style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: 2,
-              backgroundColor: palette.border,
-            }}
-          />
-          <span style={{ fontSize: 12, color: palette.textSecondary }}>{legend.total}</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: 2,
-              backgroundColor: palette.primary,
-            }}
-          />
-          <span style={{ fontSize: 12, color: palette.textSecondary }}>{legend.collected}</span>
-        </div>
-      </div>
-      <div style={{ overflowX: 'auto' }}>
-        <div style={{ minWidth: barWidth }}>
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={data} margin={{ top: 12, right: 16, left: 0, bottom: 56 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={palette.border} />
-              <XAxis
-                dataKey={nameKey}
-                tick={{ fontSize: 11, fill: palette.textSecondary }}
-                angle={-40}
-                textAnchor="end"
-                interval={0}
-                tickMargin={6}
-                axisLine={{ stroke: palette.border }}
-                tickLine={{ stroke: palette.border }}
-              />
-              <YAxis
-                allowDecimals={false}
-                tick={{ fontSize: 12, fill: palette.textSecondary }}
-                axisLine={{ stroke: palette.border }}
-                tickLine={{ stroke: palette.border }}
-              />
-              <Tooltip
-                cursor={{ fill: 'transparent', stroke: palette.border, strokeWidth: 2 }}
-                contentStyle={{
-                  backgroundColor: palette.surface,
-                  border: `1px solid ${palette.border}`,
-                  borderRadius: 10,
-                  color: palette.textPrimary,
-                }}
-                labelStyle={{ color: palette.textPrimary }}
-                itemStyle={{ color: palette.textPrimary }}
-                formatter={(value, name) => [
-                  value,
-                  name === dataKey.collected ? legend.collected : legend.total,
-                ]}
-              />
-              <Legend wrapperStyle={{ display: 'none' }} />
-              <Bar
-                dataKey={dataKey.collected}
-                stackId="a"
-                fill={palette.primary}
-                name={dataKey.collected}
-                radius={[3, 3, 0, 0]}
-              />
-              <Bar
-                dataKey={dataKey.notCollected}
-                stackId="a"
-                fill={palette.border}
-                name={dataKey.notCollected}
-                radius={[3, 3, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    </div>
   )
 }
 
@@ -281,50 +151,6 @@ const MetricsDashboard: React.FC = () => {
       onFinally: () => setMonthLoading(false),
     })
   }, [fetchMetrics])
-
-  const zoneChartData = (data?.byZone ?? []).map((z) => ({
-    name: z.zoneName,
-    collectedContainers: z.collectedContainers,
-    notCollectedContainers: z.totalContainers - z.collectedContainers,
-  }))
-
-  const districtChartData = (data?.byDistrict ?? []).map((d) => ({
-    name: d.districtName,
-    collectedContainers: d.collectedContainers,
-    notCollectedContainers: d.totalContainers - d.collectedContainers,
-  }))
-
-  const chartData = chartTab === 'zone' ? zoneChartData : districtChartData
-
-  const monthlyTrendData = (monthData?.byDay ?? []).slice(-30).map((day) => {
-    const [, month, date] = day.date.slice(0, 10).split('-')
-    return {
-      day: `${date}.${month}`,
-      collected: day.collectedContainers,
-      total: day.totalContainers,
-    }
-  })
-
-  const compliance = data?.scheduleCompliance
-  const complianceData = compliance
-    ? [
-        {
-          status: 'В график',
-          count: Math.max(0, compliance.scheduledToday - compliance.delayed),
-          color: palette.success,
-        },
-        {
-          status: 'Закъснение',
-          count: Math.max(0, compliance.delayed - compliance.missed),
-          color: palette.warning,
-        },
-        {
-          status: 'Пропуснати',
-          count: compliance.missed,
-          color: palette.error,
-        },
-      ]
-    : []
 
   return (
     <div style={{ padding: '32px 40px', maxWidth: 1200, margin: '0 auto' }}>
@@ -512,266 +338,18 @@ const MetricsDashboard: React.FC = () => {
             </div>
           </div>
 
-          <ChartSection
-            title={chartTab === 'zone' ? 'By Collection Zone' : 'By Administrative District'}
-            data={chartData}
-            dataKey={{ collected: 'collectedContainers', notCollected: 'notCollectedContainers' }}
-            nameKey="name"
-            legend={{ collected: 'Collected', total: 'Total Containers' }}
+          <CollectionByGroupChart
+            chartTab={chartTab}
+            byZone={data.byZone}
+            byDistrict={data.byDistrict}
           />
-          {/* Time-since-last-collection histogram */}
-          <div style={{ marginBottom: 48 }}>
-            <h3
-              style={{
-                fontSize: 20,
-                fontWeight: 700,
-                marginBottom: 12,
-                color: palette.textPrimary,
-              }}
-            >
-              Time Since Last Collection
-            </h3>
-            <p
-              style={{
-                fontSize: 13,
-                color: palette.textSecondary,
-                marginBottom: 16,
-                marginTop: -8,
-              }}
-            >
-              Distribution of containers by time elapsed since their most recent collection event.
-            </p>
-            {data.byTimeSinceCollection.length === 0 ? (
-              <p style={{ color: palette.textMuted, fontSize: 14 }}>
-                No collection data available yet.
-              </p>
-            ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <div style={{ minWidth: 400 }}>
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart
-                      data={data.byTimeSinceCollection.map((b) => ({
-                        bucket: b.bucket,
-                        containers: b.containerCount,
-                      }))}
-                      margin={{ top: 8, right: 24, left: 0, bottom: 8 }}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        vertical={false}
-                        stroke={palette.border}
-                      />
-                      <XAxis
-                        dataKey="bucket"
-                        tick={{ fontSize: 12, fill: palette.textSecondary }}
-                        axisLine={{ stroke: palette.border }}
-                        tickLine={{ stroke: palette.border }}
-                      />
-                      <YAxis
-                        allowDecimals={false}
-                        tick={{ fontSize: 12, fill: palette.textSecondary }}
-                        axisLine={{ stroke: palette.border }}
-                        tickLine={{ stroke: palette.border }}
-                      />
-                      <Tooltip
-                        cursor={{ fill: 'transparent', stroke: palette.border, strokeWidth: 2 }}
-                        contentStyle={{
-                          backgroundColor: palette.surface,
-                          border: `1px solid ${palette.border}`,
-                          borderRadius: 10,
-                          color: palette.textPrimary,
-                        }}
-                        labelStyle={{ color: palette.textPrimary }}
-                        itemStyle={{ color: palette.textPrimary }}
-                        formatter={(value) => [value, 'Containers']}
-                      />
-                      <Bar dataKey="containers" fill={palette.success} radius={[4, 4, 0, 0]}>
-                        {data.byTimeSinceCollection.map((bucket) => (
-                          <Cell key={bucket.bucket} fill={colorByBucketOrder(bucket.bucketOrder)} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Monthly Collection Trendline (last 30 days) */}
           {!monthLoading && !monthError && monthData && (
-            <div style={{ marginBottom: 48 }}>
-              <h3
-                style={{
-                  fontSize: 20,
-                  fontWeight: 700,
-                  marginBottom: 12,
-                  color: palette.textPrimary,
-                }}
-              >
-                Collection Trendline - Last 30 Days
-              </h3>
-              {monthlyTrendData.length === 0 ? (
-                <p style={{ color: palette.textMuted, fontSize: 14 }}>
-                  No collection data available yet.
-                </p>
-              ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <div
-                    style={{ minWidth: Math.max(560, monthlyTrendData.length * 30), height: 320 }}
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart
-                        data={monthlyTrendData}
-                        margin={{ top: 16, right: 16, left: 0, bottom: 64 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          vertical={false}
-                          stroke={palette.border}
-                        />
-                        <XAxis
-                          dataKey="day"
-                          tick={{ fontSize: 11, fill: palette.textSecondary }}
-                          angle={-45}
-                          textAnchor="end"
-                          interval={0}
-                          tickMargin={8}
-                          axisLine={{ stroke: palette.border }}
-                          tickLine={{ stroke: palette.border }}
-                        />
-                        <YAxis
-                          allowDecimals={false}
-                          tick={{ fontSize: 12, fill: palette.textSecondary }}
-                          axisLine={{ stroke: palette.border }}
-                          tickLine={{ stroke: palette.border }}
-                        />
-                        <Tooltip
-                          cursor={{ fill: 'transparent', stroke: palette.border, strokeWidth: 1 }}
-                          contentStyle={{
-                            backgroundColor: palette.surface,
-                            border: `1px solid ${palette.border}`,
-                            borderRadius: 10,
-                            color: palette.textPrimary,
-                          }}
-                          labelStyle={{ color: palette.textPrimary }}
-                          itemStyle={{ color: palette.textPrimary }}
-                          formatter={(value, name) => [
-                            value,
-                            name === 'collected' ? 'Collected Containers' : 'Total Containers',
-                          ]}
-                        />
-                        <Legend
-                          wrapperStyle={{ fontSize: 12 }}
-                          formatter={(value) =>
-                            value === 'collected' ? (
-                              <span style={{ color: palette.textSecondary }}>
-                                Collected Containers
-                              </span>
-                            ) : (
-                              <span style={{ color: palette.textSecondary }}>Total Containers</span>
-                            )
-                          }
-                        />
-                        <Bar dataKey="collected" fill={palette.primary} radius={[3, 3, 0, 0]} />
-                        <Line
-                          type="linear"
-                          dataKey="total"
-                          stroke={palette.success}
-                          strokeWidth={3}
-                          dot={false}
-                        />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              )}
-            </div>
+            <MonthlyTrendChart byDay={monthData.byDay} />
           )}
-
-          {/* Schedule compliance */}
-          <div style={{ marginBottom: 48 }}>
-            <h3
-              style={{
-                fontSize: 20,
-                fontWeight: 700,
-                marginBottom: 12,
-                color: palette.textPrimary,
-              }}
-            >
-              Изпълнение на графика
-            </h3>
-            {complianceData.length === 0 ? (
-              <p style={{ color: palette.textMuted, fontSize: 14 }}>Няма налични данни.</p>
-            ) : (
-              <>
-                <div style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
-                  {complianceData.map((item) => (
-                    <div
-                      key={item.status}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                    >
-                      <div
-                        style={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: 2,
-                          backgroundColor: item.color,
-                        }}
-                      />
-                      <span style={{ fontSize: 12, color: palette.textSecondary }}>
-                        {item.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ overflowX: 'auto' }}>
-                  <div style={{ minWidth: 400, height: 220 }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={complianceData}
-                        margin={{ top: 16, right: 16, left: 0, bottom: 8 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          vertical={false}
-                          stroke={palette.border}
-                        />
-                        <XAxis
-                          dataKey="status"
-                          tick={{ fontSize: 11, fill: palette.textSecondary }}
-                          axisLine={{ stroke: palette.border }}
-                          tickLine={{ stroke: palette.border }}
-                        />
-                        <YAxis
-                          allowDecimals={false}
-                          tick={{ fontSize: 12, fill: palette.textSecondary }}
-                          axisLine={{ stroke: palette.border }}
-                          tickLine={{ stroke: palette.border }}
-                        />
-                        <Tooltip
-                          cursor={{ fill: 'transparent', stroke: palette.border, strokeWidth: 2 }}
-                          contentStyle={{
-                            backgroundColor: palette.surface,
-                            border: `1px solid ${palette.border}`,
-                            borderRadius: 10,
-                            color: palette.textPrimary,
-                          }}
-                          labelStyle={{ color: palette.textPrimary }}
-                          itemStyle={{ color: palette.textPrimary }}
-                          formatter={(value) => [value, 'Контейнери']}
-                        />
-                        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                          {complianceData.map((item) => (
-                            <Cell key={item.status} fill={item.color} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          <TimeSinceCollectionChart data={data.byTimeSinceCollection} />
+          <ScheduleComplianceChart compliance={data.scheduleCompliance} />
+          <NewlyCreatedContainersChart />
         </>
       )}
     </div>

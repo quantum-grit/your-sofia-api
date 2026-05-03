@@ -183,10 +183,12 @@ function FlyToTarget({ target }: { target: [number, number] | null }) {
 function MarkersLayer({
   items,
   selectedIds,
+  selectedContainerId,
   onMarkerClick,
 }: {
   items: MapItem[]
   selectedIds: Set<number>
+  selectedContainerId: number | null
   onMarkerClick: (container: ContainerWithSignals) => void
 }) {
   const map = useMap()
@@ -223,7 +225,7 @@ function MarkersLayer({
       } else {
         const [lng, lat] = item.location
         const color = getMarkerColor(item)
-        const selected = selectedIds.has(item.id)
+        const selected = selectedIds.has(item.id) || item.id === selectedContainerId
         const marker = L.marker([lat, lng], { icon: createColorIcon(color, selected) })
         marker.on('click', () => onMarkerClickRef.current(item))
         backGroup.addLayer(marker)
@@ -234,7 +236,7 @@ function MarkersLayer({
     backGroup.addTo(map)
     groups[front].remove()
     frontRef.current = back
-  }, [items, selectedIds, map])
+  }, [items, selectedIds, selectedContainerId, map])
 
   return null
 }
@@ -242,21 +244,25 @@ function MarkersLayer({
 interface ContainerMapProps {
   items: MapItem[]
   selectedIds: Set<number>
+  selectedContainerId: number | null
   selectMode: boolean
   onMarkerClick: (container: ContainerWithSignals) => void
   onMapClick: (lat: number, lng: number, screenX: number, screenY: number) => void
   onViewportChange: (zoom: number, bounds: Bounds) => void
   flyToTarget: [number, number] | null
+  initialZoom?: number
 }
 
 export function ContainerMap({
   items,
   selectedIds,
+  selectedContainerId,
   selectMode,
   onMarkerClick,
   onMapClick,
   onViewportChange,
   flyToTarget,
+  initialZoom = 12,
 }: ContainerMapProps) {
   const handleMapClick = useCallback(
     (lat: number, lng: number, screenX: number, screenY: number) => {
@@ -268,7 +274,7 @@ export function ContainerMap({
   return (
     <MapContainer
       center={[SOFIA_LAT, SOFIA_LNG]}
-      zoom={12}
+      zoom={initialZoom}
       style={{ width: '100%', height: '100%' }}
       scrollWheelZoom
     >
@@ -279,7 +285,12 @@ export function ContainerMap({
       <MapClickHandler onMapClick={handleMapClick} />
       <FlyToTarget target={flyToTarget} />
       <ViewportTracker onViewportChange={onViewportChange} />
-      <MarkersLayer items={items} selectedIds={selectedIds} onMarkerClick={onMarkerClick} />
+      <MarkersLayer
+        items={items}
+        selectedIds={selectedIds}
+        selectedContainerId={selectedContainerId}
+        onMarkerClick={onMarkerClick}
+      />
     </MapContainer>
   )
 }

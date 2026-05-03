@@ -62,13 +62,13 @@ export function CollectionByGroupChart({
   if (!resolvedTitle) {
     switch (groupBy) {
       case 'zone':
-        resolvedTitle = 'By Collection Zone'
+        resolvedTitle = 'По зона за сметосъбиране'
         break
       case 'district':
-        resolvedTitle = 'By Administrative District'
+        resolvedTitle = 'По административен район'
         break
       case 'day':
-        resolvedTitle = 'Collection Trendline - Last 30 Days'
+        resolvedTitle = 'Тенденция на сметосъбирането - последните 30 дни'
         break
     }
   }
@@ -135,7 +135,7 @@ export function CollectionByGroupChart({
                 cursor: 'pointer',
               }}
             >
-              {t === 'district' ? 'By District' : t === 'zone' ? 'By Zone' : 'By Date'}
+              {t === 'district' ? 'По район' : t === 'zone' ? 'По зона' : 'По дата'}
             </button>
           ))}
         </div>
@@ -153,7 +153,7 @@ export function CollectionByGroupChart({
               backgroundColor: palette.border,
             }}
           />
-          <span style={{ fontSize: 12, color: palette.textSecondary }}>Total Containers</span>
+          <span style={{ fontSize: 12, color: palette.textSecondary }}>Общо контейнери</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <div
@@ -164,7 +164,7 @@ export function CollectionByGroupChart({
               backgroundColor: palette.primary,
             }}
           />
-          <span style={{ fontSize: 12, color: palette.textSecondary }}>Collected</span>
+          <span style={{ fontSize: 12, color: palette.textSecondary }}>Събрани</span>
         </div>
       </div>
       <div style={{ overflowX: 'auto' }}>
@@ -199,9 +199,7 @@ export function CollectionByGroupChart({
                 labelStyle={{ color: palette.textPrimary }}
                 itemStyle={{ color: palette.textPrimary }}
                 formatter={(value, name) =>
-                  name === 'collectedContainers'
-                    ? [value, 'Collected']
-                    : [value, 'Total Containers']
+                  name === 'collectedContainers' ? [value, 'Събрани'] : [value, 'Общо контейнери']
                 }
               />
               <Legend wrapperStyle={{ display: 'none' }} />

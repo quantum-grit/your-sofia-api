@@ -72,7 +72,9 @@ export function NewlyCreatedContainersChart() {
         setFromLabel(new Date(json.from).toLocaleDateString('bg-BG'))
         setToLabel(new Date(json.to).toLocaleDateString('bg-BG'))
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to load newly created containers')
+        setError(
+          e instanceof Error ? e.message : 'Грешка при зареждане на новосъздадените контейнери'
+        )
       } finally {
         setLoading(false)
       }
@@ -117,10 +119,10 @@ export function NewlyCreatedContainersChart() {
       >
         <div>
           <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0, color: palette.textPrimary }}>
-            Newly created containers
+            Новосъздадени контейнери
           </h3>
           <p style={{ margin: '4px 0 0', fontSize: 12, color: palette.textSecondary }}>
-            Pending containers created per day ({fromLabel} - {toLabel})
+            Новосъздадени контейнери в статус „чакащ“ по дни ({fromLabel} - {toLabel})
           </p>
         </div>
 
@@ -138,7 +140,7 @@ export function NewlyCreatedContainersChart() {
               fontSize: 12,
             }}
           >
-            Previous
+            Предишни
           </button>
           <button
             type="button"
@@ -154,12 +156,12 @@ export function NewlyCreatedContainersChart() {
               fontSize: 12,
             }}
           >
-            Next
+            Следващи
           </button>
         </div>
       </div>
 
-      {error && <p style={{ color: palette.error, fontSize: 14 }}>Failed to load: {error}</p>}
+      {error && <p style={{ color: palette.error, fontSize: 14 }}>Грешка при зареждане: {error}</p>}
 
       <div style={{ position: 'relative', minHeight: 320 }}>
         {chartData.length > 0 && !error && (
@@ -194,7 +196,7 @@ export function NewlyCreatedContainersChart() {
                     }}
                     labelStyle={{ color: palette.textPrimary }}
                     itemStyle={{ color: palette.textPrimary }}
-                    formatter={(value) => [value, 'Pending containers']}
+                    formatter={(value) => [value, 'Контейнери в изчакване']}
                   />
                   <Bar
                     dataKey="count"
@@ -234,7 +236,7 @@ export function NewlyCreatedContainersChart() {
               fontSize: 14,
             }}
           >
-            Loading chart…
+            Зареждане на графиката…
           </div>
         )}
 
@@ -249,7 +251,7 @@ export function NewlyCreatedContainersChart() {
               fontSize: 14,
             }}
           >
-            No data for this period.
+            Няма данни за този период.
           </div>
         )}
       </div>

@@ -30,7 +30,7 @@ export function TimeSinceCollectionChart({ data }: TimeSinceCollectionChartProps
           color: palette.textPrimary,
         }}
       >
-        Time Since Last Collection
+        Време от последното събиране
       </h3>
       <p
         style={{
@@ -40,10 +40,12 @@ export function TimeSinceCollectionChart({ data }: TimeSinceCollectionChartProps
           marginTop: -8,
         }}
       >
-        Distribution of containers by time elapsed since their most recent collection event.
+        Разпределение на контейнерите според времето, изминало от последното им събитие за събиране.
       </p>
       {data.length === 0 ? (
-        <p style={{ color: palette.textMuted, fontSize: 14 }}>No collection data available yet.</p>
+        <p style={{ color: palette.textMuted, fontSize: 14 }}>
+          Все още няма налични данни за събирания.
+        </p>
       ) : (
         <div style={{ overflowX: 'auto' }}>
           <div style={{ minWidth: 400 }}>
@@ -78,7 +80,7 @@ export function TimeSinceCollectionChart({ data }: TimeSinceCollectionChartProps
                   }}
                   labelStyle={{ color: palette.textPrimary }}
                   itemStyle={{ color: palette.textPrimary }}
-                  formatter={(value) => [value, 'Containers']}
+                  formatter={(value) => [value, 'Контейнери']}
                 />
                 <Bar dataKey="containers" fill={palette.success} radius={[4, 4, 0, 0]}>
                   {data.map((bucket) => (

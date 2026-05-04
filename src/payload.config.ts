@@ -1,5 +1,6 @@
 // storage-adapter-import-placeholder
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { migrations } from './migrations'
 
 import sharp from 'sharp' // sharp-import
@@ -42,6 +43,34 @@ import { adminOnly } from '@/access/adminOnly'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const serverURL = getServerSideURL()
+
+const defaultFromName = process.env.EMAIL_FROM_NAME || 'Твоята София'
+const defaultFromAddress = process.env.EMAIL_FROM_ADDRESS || 'no-reply@your.sofia.bg'
+const parsedSmtpPort = Number.parseInt(process.env.SMTP_PORT || '587', 10)
+const smtpPort = Number.isNaN(parsedSmtpPort) ? 587 : parsedSmtpPort
+const smtpSecure = process.env.SMTP_SECURE === 'true'
+
+const email = nodemailerAdapter(
+  process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS
+    ? {
+        defaultFromName,
+        defaultFromAddress,
+        transportOptions: {
+          host: process.env.SMTP_HOST,
+          port: smtpPort,
+          secure: smtpSecure,
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        },
+      }
+    : {
+        defaultFromName,
+        defaultFromAddress,
+      }
+)
 
 export default buildConfig({
   admin: {
@@ -133,7 +162,8 @@ export default buildConfig({
     GeocodeAddresses,
     Subscriptions,
   ],
-  cors: [getServerSideURL()].filter(Boolean),
+  cors: [serverURL].filter(Boolean),
+  email,
   endpoints: [healthCheck, updates, updatesById, updatesSources, updatesOpenApi],
   globals: [Header, Footer, NotificationSettings],
   i18n: {
@@ -173,6 +203,7 @@ export default buildConfig({
     ...plugins,
     // storage-adapter-placeholder
   ],
+  serverURL,
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {

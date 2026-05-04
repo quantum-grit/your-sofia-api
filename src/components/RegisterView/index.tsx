@@ -52,9 +52,11 @@ const RegisterView: React.FC = () => {
     return (
       <MinimalTemplate>
         <div className="register">
-          <h1>Регистрацията е успешна!</h1>
+          <h1>Потвърдете имейла си</h1>
+          <p>Изпратихме ви линк за потвърждение на посочения имейл адрес.</p>
           <p>
-            Профилът ви е създаден. <Link href="/admin/login">Влезте в акаунта си</Link>
+            След като активирате профила си от линка,{' '}
+            <Link href="/admin/login">влезте в акаунта си</Link>
           </p>
         </div>
       </MinimalTemplate>

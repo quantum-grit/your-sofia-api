@@ -83,7 +83,7 @@ describe('RegisterView', () => {
     })
   })
 
-  it('shows success message and login link after successful registration', async () => {
+  it('shows email confirmation message and login link after successful registration', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ doc: { id: '1' } }),
@@ -93,7 +93,8 @@ describe('RegisterView', () => {
     fillForm('test@sofia.bg', 'password123', 'password123')
     fireEvent.click(screen.getByRole('button', { name: /регистрирай се/i }))
 
-    expect(await screen.findByText(/регистрацията е успешна/i)).toBeInTheDocument()
+    expect(await screen.findByText(/потвърдете имейла си/i)).toBeInTheDocument()
+    expect(screen.getByText(/изпратихме ви линк за потвърждение/i)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /влезте в акаунта си/i })).toHaveAttribute(
       'href',
       '/admin/login'

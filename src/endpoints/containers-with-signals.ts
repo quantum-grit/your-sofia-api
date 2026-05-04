@@ -25,17 +25,23 @@ export const containersWithSignalCount: Endpoint = {
 
     try {
       const zoom = parseInt((req.query?.zoom as string) || '12')
+      const status = req.query?.status as string | undefined
       const minLat = parseFloat((req.query?.minLat as string) || '')
       const maxLat = parseFloat((req.query?.maxLat as string) || '')
       const minLng = parseFloat((req.query?.minLng as string) || '')
       const maxLng = parseFloat((req.query?.maxLng as string) || '')
       const hasBounds = !isNaN(minLat) && !isNaN(maxLat) && !isNaN(minLng) && !isNaN(maxLng)
 
+      const allowedStatuses = ['active', 'full', 'maintenance', 'inactive', 'pending'] as const
+      const hasStatusFilter =
+        typeof status === 'string' && (allowedStatuses as readonly string[]).includes(status)
+
       const db = payload.db
 
       const boundsFilter = hasBounds
         ? sql`AND wc.location && ST_MakeEnvelope(${minLng}, ${minLat}, ${maxLng}, ${maxLat}, 4326)`
         : sql``
+      const statusFilter = hasStatusFilter ? sql`AND wc.status = ${status}` : sql``
 
       if (zoom >= INDIVIDUAL_ZOOM) {
         // Return individual markers for the visible viewport (capped at 2000)
@@ -71,6 +77,7 @@ export const containersWithSignalCount: Endpoint = {
           )
           WHERE wc.location IS NOT NULL
             ${boundsFilter}
+            ${statusFilter}
           GROUP BY wc.id
           ORDER BY active_signal_count DESC
           LIMIT ${limit}
@@ -122,6 +129,7 @@ export const containersWithSignalCount: Endpoint = {
           )
           WHERE wc.location IS NOT NULL
             ${boundsFilter}
+            ${statusFilter}
           GROUP BY ST_SnapToGrid(wc.location::geometry, ${gridSize})
           ORDER BY count DESC
         `

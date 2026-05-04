@@ -43,7 +43,7 @@ export const Users: CollectionConfig = {
     hidden: adminOnly,
   },
   auth: {
-    //verify: process.env.NODE_ENV === 'production',
+    verify: true,
     tokenExpiration: 60 * 60 * 24, // 24h in secconds
     maxLoginAttempts: 5, // the admin can unlock manually
     lockTime: 1000 * 60 * 10, // 10 minutes in milliseconds

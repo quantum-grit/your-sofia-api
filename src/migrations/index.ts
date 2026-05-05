@@ -40,6 +40,7 @@ import * as migration_20260420_171859_add_reporterUniqueId_to_push_tokens from '
 import * as migration_20260423_172832_notification_toggle from './20260423_172832_notification_toggle';
 import * as migration_20260428_163003_news_topics from './20260428_163003_news_topics';
 import * as migration_20260502_081213_container_service_fixes from './20260502_081213_container_service_fixes';
+import * as migration_20260505_065206_user_verification from './20260505_065206_user_verification';
 
 export const migrations = [
   {
@@ -250,6 +251,11 @@ export const migrations = [
   {
     up: migration_20260502_081213_container_service_fixes.up,
     down: migration_20260502_081213_container_service_fixes.down,
-    name: '20260502_081213_container_service_fixes'
+    name: '20260502_081213_container_service_fixes',
+  },
+  {
+    up: migration_20260505_065206_user_verification.up,
+    down: migration_20260505_065206_user_verification.down,
+    name: '20260505_065206_user_verification'
   },
 ];

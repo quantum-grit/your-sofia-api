@@ -2,34 +2,33 @@ import type { CollectionConfig, Access } from 'payload'
 import { canViewCityInfrastructure } from '@/access/cityInfrastructureAdmin'
 import { isAdmin } from '@/access/isAdmin'
 import { beforeValidateSignal } from './hooks/beforeValidateSignal'
+import { beforeChangeSetReporter } from './hooks/beforeChangeSetReporter'
 import { afterChangeUpdateContainer } from './hooks/afterChangeUpdateContainer'
 import { afterChangeNotifyReporter } from './hooks/afterChangeNotifyReporter'
-import { afterReadStripReporterUniqueId } from './hooks/afterReadStripReporterUniqueId'
 
-const canUpdate: Access = async ({ req, data, id }) => {
+const canUpdate: Access = async ({ req, id }) => {
   if (canViewCityInfrastructure({ req })) return true
 
-  // For non-admin updates, verify reporterUniqueId
-  if (data && data.reporterUniqueId && id) {
-    try {
-      // Fetch the existing signal
-      const existingSignal = await req.payload.findByID({
-        collection: 'signals',
-        id: id.toString(),
-        overrideAccess: true,
-      })
+  if (!req.user || !id) return false
 
-      // Check if the reporterUniqueId matches
-      if (existingSignal.reporterUniqueId === data.reporterUniqueId) {
-        return true
-      }
-    } catch (error) {
-      req.payload.logger.error(`Error verifying reporterUniqueId: ${error}`)
-      return false
-    }
+  try {
+    const existingSignal = await req.payload.findByID({
+      collection: 'signals',
+      id: id.toString(),
+      overrideAccess: true,
+    })
+
+    // Reporter is stored as a user ID (number). Compare as strings for safety.
+    const reporterId =
+      typeof existingSignal.reporter === 'object'
+        ? existingSignal.reporter?.id
+        : existingSignal.reporter
+
+    return String(reporterId) === String(req.user.id)
+  } catch (error) {
+    req.payload.logger.error(`Error verifying signal reporter: ${error}`)
+    return false
   }
-
-  return false
 }
 
 export const Signals: CollectionConfig = {
@@ -48,8 +47,8 @@ export const Signals: CollectionConfig = {
   defaultSort: '-createdAt',
   hooks: {
     beforeValidate: [beforeValidateSignal],
+    beforeChange: [beforeChangeSetReporter],
     afterChange: [afterChangeUpdateContainer, afterChangeNotifyReporter],
-    afterRead: [afterReadStripReporterUniqueId],
   },
   access: {
     admin: canViewCityInfrastructure,
@@ -212,6 +211,18 @@ export const Signals: CollectionConfig = {
       admin: {
         description: 'Вътрешни бележки от администратори',
         condition: (data, siblingData, { user }) => Boolean(user),
+      },
+    },
+    {
+      name: 'reporter',
+      label: 'Подател',
+      type: 'relationship',
+      relationTo: 'users',
+      required: false,
+      index: true,
+      admin: {
+        description: 'Потребителят, подал сигнала',
+        position: 'sidebar',
       },
     },
     {

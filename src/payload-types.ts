@@ -1108,6 +1108,10 @@ export interface Signal {
    */
   adminNotes?: string | null;
   /**
+   * Потребителят, подал сигнала
+   */
+  reporter?: (number | null) | User;
+  /**
    * Уникален анонимен идентификатор на подателя (за обратна връзка)
    */
   reporterUniqueId?: string | null;
@@ -2087,6 +2091,7 @@ export interface SignalsSelect<T extends boolean = true> {
   images?: T;
   status?: T;
   adminNotes?: T;
+  reporter?: T;
   reporterUniqueId?: T;
   updatedAt?: T;
   createdAt?: T;

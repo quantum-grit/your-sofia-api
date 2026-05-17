@@ -165,7 +165,6 @@ interface ContainerPopupProps {
   container: ContainerWithSignals
   onClose: () => void
   onContainerUpdated: (updated: ContainerWithSignals) => void
-  onBeforeEdit?: () => void
 }
 
 function SearchableRelationField({
@@ -306,12 +305,7 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
   )
 }
 
-export function ContainerPopup({
-  container,
-  onClose,
-  onContainerUpdated,
-  onBeforeEdit,
-}: ContainerPopupProps) {
+export function ContainerPopup({ container, onClose, onContainerUpdated }: ContainerPopupProps) {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin' || user?.role === 'containerAdmin'
 
@@ -350,16 +344,20 @@ export function ContainerPopup({
   })
 
   useEffect(() => {
-    setForm(createEditFormState(container))
-    setSaveError(null)
-    setDistrictQuery('')
-    setIsEditing(false)
+    void Promise.resolve().then(() => {
+      setForm(createEditFormState(container))
+      setSaveError(null)
+      setDistrictQuery('')
+      setIsEditing(false)
+    })
   }, [container])
 
   useEffect(() => {
     const districtId = Number(form.districtId)
     if (!Number.isFinite(districtId) || districtId <= 0) {
-      setSelectedDistrict(null)
+      void Promise.resolve().then(() => {
+        setSelectedDistrict(null)
+      })
       return
     }
     if (selectedDistrict?.id === districtId) return
@@ -394,8 +392,10 @@ export function ContainerPopup({
 
   useEffect(() => {
     if (!districtQuery.trim()) {
-      setDistrictOptions([])
-      setDistrictError(null)
+      void Promise.resolve().then(() => {
+        setDistrictOptions([])
+        setDistrictError(null)
+      })
       return
     }
 

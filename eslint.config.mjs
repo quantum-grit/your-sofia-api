@@ -30,9 +30,6 @@ const eslintConfig = [
   },
   {
     files: ['src/components/WasteContainerMap/ContainerPopup.tsx'],
-    rules: {
-      'react-hooks/set-state-in-effect': 'off',
-    },
   },
   {
     ignores: [

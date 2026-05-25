@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 
 import type { Endpoint } from 'payload'
+import type { User } from '@/payload-types'
 
 export const resendVerificationEmail: Endpoint = {
   path: '/resend-verification-email',
@@ -38,7 +39,7 @@ export const resendVerificationEmail: Endpoint = {
         limit: 1,
       })
 
-      const user = result.docs[0]
+      const user = result.docs[0] as User | undefined
 
       // No user or already verified — silently succeed
       if (!user || user._verified) {
@@ -52,13 +53,12 @@ export const resendVerificationEmail: Endpoint = {
       await payload.update({
         collection: 'users',
         id: user.id,
-        data: { _verificationToken: token } as any,
+        data: { _verificationToken: token } as Partial<User>,
       })
 
-      // Build the verification URL (admin panel verify route)
+      // Build the verification URL for user-facing email verification.
       const serverURL = payload.config.serverURL || process.env.NEXT_PUBLIC_SERVER_URL || ''
-      const adminRoute = payload.config.routes?.admin ?? '/admin'
-      const verificationURL = `${serverURL}${adminRoute}/users/verify/${token}`
+      const verificationURL = `${serverURL}/verify-email?token=${token}`
 
       // Send the verification email
       await payload.email.sendEmail({

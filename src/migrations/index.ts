@@ -47,6 +47,7 @@ import * as migration_20260621_074149 from './20260621_074149';
 import * as migration_20260626_152159_feature_config from './20260626_152159_feature_config';
 import * as migration_20260729_093425_bulky_waste_zones from './20260729_093425_bulky_waste_zones';
 import * as migration_20260729_101500_import_bulky_waste_zones from './20260729_101500_import_bulky_waste_zones';
+import * as migration_20260726_170938_missions from './20260726_170938_missions';
 
 export const migrations = [
   {
@@ -282,7 +283,7 @@ export const migrations = [
   {
     up: migration_20260626_152159_feature_config.up,
     down: migration_20260626_152159_feature_config.down,
-    name: '20260626_152159_feature_config'
+    name: '20260626_152159_feature_config',
   },
   {
     up: migration_20260729_093425_bulky_waste_zones.up,
@@ -293,5 +294,10 @@ export const migrations = [
     up: migration_20260729_101500_import_bulky_waste_zones.up,
     down: migration_20260729_101500_import_bulky_waste_zones.down,
     name: '20260729_101500_import_bulky_waste_zones'
+  },
+  {
+    up: migration_20260726_170938_missions.up,
+    down: migration_20260726_170938_missions.down,
+    name: '20260726_170938_missions'
   },
 ];

@@ -93,7 +93,7 @@ export const Missions: CollectionConfig = {
       type: 'text',
       required: true,
       admin: {
-        description: 'Заглавие на мисията, показвано на дъската с мисии',
+        description: 'Заглавие на мисията, показвано на списъка с мисии',
       },
     },
     {

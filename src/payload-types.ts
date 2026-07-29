@@ -76,6 +76,7 @@ export interface Config {
     'push-tokens': PushToken;
     'city-districts': CityDistrict;
     'waste-containers': WasteContainer;
+    'bulky-waste-zones': BulkyWasteZone;
     'waste-container-observations': WasteContainerObservation;
     'waste-collection-zones': WasteCollectionZone;
     signals: Signal;
@@ -106,6 +107,7 @@ export interface Config {
     'push-tokens': PushTokensSelect<false> | PushTokensSelect<true>;
     'city-districts': CityDistrictsSelect<false> | CityDistrictsSelect<true>;
     'waste-containers': WasteContainersSelect<false> | WasteContainersSelect<true>;
+    'bulky-waste-zones': BulkyWasteZonesSelect<false> | BulkyWasteZonesSelect<true>;
     'waste-container-observations': WasteContainerObservationsSelect<false> | WasteContainerObservationsSelect<true>;
     'waste-collection-zones': WasteCollectionZonesSelect<false> | WasteCollectionZonesSelect<true>;
     signals: SignalsSelect<false> | SignalsSelect<true>;
@@ -1006,6 +1008,34 @@ export interface WasteContainer {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bulky-waste-zones".
+ */
+export interface BulkyWasteZone {
+  id: number;
+  sourceId: number;
+  name: string;
+  info?: string | null;
+  /**
+   * ISO номера на делничния ден (1=Пон, 7=Нед) за събиране на ЕГО
+   */
+  collectionDaysOfWeek?: ('1' | '2' | '3' | '4' | '5' | '6' | '7')[] | null;
+  /**
+   * Начертайте или редактирайте границата на зоната директно върху картата.
+   */
+  boundary:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Наблюдения при събиране на отпадъци и почистване
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1059,13 +1089,7 @@ export interface Signal {
    * Вид на сигнализирания проблем
    */
   category:
-    | 'waste-container'
-    | 'street-damage'
-    | 'lighting'
-    | 'green-spaces'
-    | 'parking'
-    | 'public-transport'
-    | 'other';
+    'waste-container' | 'street-damage' | 'lighting' | 'green-spaces' | 'parking' | 'public-transport' | 'other';
   /**
    * Препратка към свързан градски обект (напр. контейнер за отпадъци)
    */
@@ -1084,8 +1108,7 @@ export interface Signal {
    * Състояние на контейнера за отпадъци (само за сигнали за контейнери)
    */
   containerState?:
-    | ('full' | 'dirty' | 'damaged' | 'leaves' | 'maintenance' | 'bagged' | 'fallen' | 'bulkyWaste')[]
-    | null;
+    ('full' | 'dirty' | 'damaged' | 'leaves' | 'maintenance' | 'bagged' | 'fallen' | 'bulkyWaste')[] | null;
   /**
    * Географски координати [дължина, ширина] на сигнализирания проблем. Задължително, ако няма посочен свързан обект.
    *
@@ -1601,6 +1624,10 @@ export interface PayloadLockedDocument {
         value: number | WasteContainer;
       } | null)
     | ({
+        relationTo: 'bulky-waste-zones';
+        value: number | BulkyWasteZone;
+      } | null)
+    | ({
         relationTo: 'waste-container-observations';
         value: number | WasteContainerObservation;
       } | null)
@@ -2066,6 +2093,19 @@ export interface WasteContainersSelect<T extends boolean = true> {
   state?: T;
   notes?: T;
   lastCleaned?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bulky-waste-zones_select".
+ */
+export interface BulkyWasteZonesSelect<T extends boolean = true> {
+  sourceId?: T;
+  name?: T;
+  info?: T;
+  collectionDaysOfWeek?: T;
+  boundary?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2728,6 +2768,7 @@ export interface TaskCreateCollectionExport {
       | 'push-tokens'
       | 'city-districts'
       | 'waste-containers'
+      | 'bulky-waste-zones'
       | 'waste-container-observations'
       | 'waste-collection-zones'
       | 'signals'

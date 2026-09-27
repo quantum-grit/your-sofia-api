@@ -1,4 +1,4 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { Access, CollectionConfig, Where } from 'payload'
 import {
   canViewCityInfrastructure,
   isCityInfrastructureAdmin,
@@ -30,15 +30,18 @@ const canReadMissions: Access = ({ req: { user } }) => {
   if (isCityInfrastructureAdmin(user?.role)) return true
 
   if (!user) {
-    return { status: { in: ['open', 'completed'] } }
+    const publicWhere: Where = { status: { in: ['open', 'completed'] } }
+    return publicWhere
   }
 
-  return {
+  const memberWhere: Where = {
     or: [
       { status: { in: ['open', 'completed', 'ready_for_review'] } },
       { citizen: { equals: user.id } },
     ],
   }
+
+  return memberWhere
 }
 
 export const Missions: CollectionConfig = {

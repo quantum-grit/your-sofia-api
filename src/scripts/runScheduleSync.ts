@@ -56,15 +56,8 @@ async function main() {
     }
   }
 
-  console.log('Queuing task...')
-  await payload.jobs.queue({
-    task: 'syncWasteCollectionSchedules',
-    input: { year, month, ...(district ? { district } : {}), ...(size ? { size } : {}) },
-  })
-
-  console.log('Running queued jobs...')
-  const result = await payload.jobs.run()
-  console.log('Done.', result)
+  console.log('syncWasteCollectionSchedules is disabled; skipping queued job execution.')
+  process.exit(0)
 
   process.exit(0)
 }

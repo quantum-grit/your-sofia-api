@@ -10,7 +10,14 @@ const GitHubIcon = () => (
   </svg>
 )
 
-const menus = [
+type MenuItem = {
+  label: string
+  href: string
+  external?: boolean
+  icon?: React.ReactNode
+}
+
+const menus: Array<{ label: string; items: MenuItem[] }> = [
   {
     label: 'За проекта',
     items: [
@@ -58,7 +65,7 @@ export const MobileNav: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
           {openSection === menu.label && (
             <div className="pl-4 flex flex-col">
-              {menu.items.map(({ label, href, external, icon }) =>
+              {menu.items.map(({ label, href, external, icon }: MenuItem) =>
                 external ? (
                   <a
                     key={href}

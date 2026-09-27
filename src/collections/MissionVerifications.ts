@@ -2,6 +2,7 @@ import type {
   CollectionBeforeValidateHook,
   CollectionAfterChangeHook,
   CollectionConfig,
+  Where,
 } from 'payload'
 import { APIError } from 'payload'
 import {
@@ -157,7 +158,12 @@ export const MissionVerifications: CollectionConfig = {
     read: ({ req: { user } }) => {
       if (isCityInfrastructureAdmin(user?.role)) return true
       if (!user) return false
-      return { or: [{ verifier: { equals: user.id } }, { 'mission.citizen': { equals: user.id } }] }
+
+      const userMissionAccess: Where = {
+        or: [{ verifier: { equals: user.id } }, { 'mission.citizen': { equals: user.id } }],
+      }
+
+      return userMissionAccess
     },
     update: () => false,
     delete: ({ req: { user } }) => isCityInfrastructureAdmin(user?.role),

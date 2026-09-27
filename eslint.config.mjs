@@ -10,6 +10,11 @@ const eslintConfig = [
   ...nextVitals,
   ...nextTs,
   {
+    settings: {
+      react: {
+        version: '19.3',
+      },
+    },
     rules: {
       '@typescript-eslint/ban-ts-comment': 'warn',
       '@typescript-eslint/no-empty-object-type': 'warn',
